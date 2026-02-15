@@ -2,7 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"embed"
+	"io/fs"
 	"log"
+	"os"
 
 	"go-sentinel/internal/api"
 	"go-sentinel/internal/db"
@@ -11,8 +14,16 @@ import (
 	_ "github.com/glebarez/go-sqlite"
 )
 
+//go:embed web/dist/*
+var frontend embed.FS
+
 func main() {
-	database, err := sql.Open("sqlite", "monitor.db")
+	dbPath := os.Getenv("DB_PATH")
+	if dbPath == "" {
+		dbPath = "monitor.db"
+	}
+
+	database, err := sql.Open("sqlite", dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -25,5 +36,12 @@ func main() {
 	monitor.StartWorker(database)
 
 	server := api.NewServer(database)
-	server.Start("8080")
+
+	distFS, err := fs.Sub(frontend, "web/dist")
+	if err != nil {
+		log.Fatal(err)
+	}
+	server.RegisterFrontend(distFS)
+
+	server.Start("8088")
 }

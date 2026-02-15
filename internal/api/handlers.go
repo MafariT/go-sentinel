@@ -15,9 +15,32 @@ func (s *Server) handleMonitors(w http.ResponseWriter, r *http.Request) {
 		s.handleGetMonitors(w, r)
 	case http.MethodPost:
 		s.handlePostMonitor(w, r)
+	case http.MethodDelete:
+		s.handleDeleteMonitor(w, r)
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func (s *Server) handleDeleteMonitor(w http.ResponseWriter, r *http.Request) {
+	idStr := r.URL.Query().Get("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id parameter", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.DeleteMonitor(s.DB, id); err != nil {
+		http.Error(w, "Failed to delete monitor", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (s *Server) handleGetMonitors(w http.ResponseWriter, r *http.Request) {

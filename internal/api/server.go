@@ -33,8 +33,8 @@ func (s *Server) RegisterFrontend(staticFS fs.FS) {
 }
 
 func (s *Server) Start(port string) {
-	log.Printf("API Server running on http://localhost:%s", port)
-	if err := http.ListenAndServe("127.0.0.1:"+port, s.mux); err != nil {
+	log.Printf("API Server running on port %s", port)
+	if err := http.ListenAndServe(":"+port, s.mux); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }

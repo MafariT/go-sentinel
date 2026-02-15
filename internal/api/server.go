@@ -8,8 +8,9 @@ import (
 )
 
 type Server struct {
-	DB  *sql.DB
-	mux *http.ServeMux
+	DB         *sql.DB
+	mux        *http.ServeMux
+	AdminToken string
 }
 
 func NewServer(database *sql.DB) *Server {

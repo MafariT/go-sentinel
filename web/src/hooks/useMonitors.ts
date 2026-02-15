@@ -4,11 +4,34 @@ import type { Monitor, Check, MonitorStats } from '../types';
 
 const API_BASE = '';
 
-export function useMonitors() {
+interface UseMonitorsReturn {
+  monitors: Monitor[];
+  checks: Check[];
+  loading: boolean;
+  showAdd: boolean;
+  setShowAdd: (show: boolean) => void;
+  addMonitor: (name: string, url: string, interval: number) => Promise<boolean>;
+  deleteMonitor: (id: number) => Promise<void>;
+  monitorHistory: Record<number, any[]>;
+  globalStats: MonitorStats;
+  isAdmin: boolean;
+  setToken: (token: string | null) => void;
+}
+
+export function useMonitors(): UseMonitorsReturn {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [checks, setChecks] = useState<Check[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('admin_token'));
+
+  useEffect(() => {
+    if (token) {
+      localStorage.setItem('admin_token', token);
+    } else {
+      localStorage.removeItem('admin_token');
+    }
+  }, [token]);
 
   const fetchData = async () => {
     try {
@@ -33,12 +56,17 @@ export function useMonitors() {
 
   const addMonitor = async (name: string, url: string, interval: number) => {
     try {
-      await axios.post(`${API_BASE}/monitors`, { name, url, interval });
+      await axios.post(`${API_BASE}/monitors`, { name, url, interval }, {
+        headers: { Authorization: token }
+      });
       setShowAdd(false);
       fetchData();
       return true;
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('Unauthorized: Invalid or missing token');
+        setToken(null);
+      }
       return false;
     }
   };
@@ -46,10 +74,17 @@ export function useMonitors() {
   const deleteMonitor = async (id: number) => {
     if (!confirm('Delete this monitor?')) return;
     try {
-      await axios.delete(`${API_BASE}/monitors?id=${id}`);
+      await axios.delete(`${API_BASE}/monitors?id=${id}`, {
+        headers: { Authorization: token }
+      });
       fetchData();
-    } catch (err) {
-      alert('Delete failed');
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('Unauthorized: Invalid or missing token');
+        setToken(null);
+      } else {
+        alert('Delete failed');
+      }
     }
   };
 
@@ -88,6 +123,8 @@ export function useMonitors() {
     addMonitor,
     deleteMonitor,
     monitorHistory,
-    globalStats
+    globalStats,
+    isAdmin: !!token,
+    setToken
   };
 }

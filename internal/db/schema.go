@@ -21,6 +21,9 @@ CREATE TABLE IF NOT EXISTS checks (
     checked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (monitor_id) REFERENCES monitors (id)
 );
+
+CREATE INDEX IF NOT EXISTS idx_checks_monitor_id ON checks(monitor_id);
+CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks(checked_at);
 `
 
 func Initialize(db *sql.DB) error {

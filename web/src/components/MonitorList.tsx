@@ -8,9 +8,10 @@ interface MonitorListProps {
   loading: boolean;
   monitorHistory: Record<number, any[]>;
   onDelete: (id: number) => void;
+  isAdmin: boolean;
 }
 
-export function MonitorList({ monitors, checks, loading, monitorHistory, onDelete }: MonitorListProps) {
+export function MonitorList({ monitors, checks, loading, monitorHistory, onDelete, isAdmin }: MonitorListProps) {
   if (loading) {
     return (
       <div className="p-12 text-center text-[#444] animate-pulse flex justify-center items-center gap-2">
@@ -80,13 +81,15 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
 
             {/* Actions */}
             <div className="text-right">
-              <button 
-                onClick={() => onDelete(m.id)}
-                className="text-[#333] hover:text-red-500 p-2 rounded transition-colors"
-                title="Delete Monitor"
-              >
-                <Trash2 size={15} />
-              </button>
+              {isAdmin && (
+                <button 
+                  onClick={() => onDelete(m.id)}
+                  className="text-[#333] hover:text-red-500 p-2 rounded transition-colors"
+                  title="Delete Monitor"
+                >
+                  <Trash2 size={15} />
+                </button>
+              )}
             </div>
           </div>
         );

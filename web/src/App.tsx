@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useMonitors } from './hooks/useMonitors';
 import { Navbar } from './components/Navbar';
 import { MonitorForm } from './components/MonitorForm';
@@ -14,8 +15,21 @@ function App() {
     addMonitor,
     deleteMonitor,
     monitorHistory,
-    globalStats
+    globalStats,
+    isAdmin,
+    setToken
   } = useMonitors();
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('admin') === 'true' && !isAdmin) {
+      const token = prompt('Enter Admin Token to enable Edit Mode:');
+      if (token) {
+        setToken(token);
+        window.history.replaceState({}, '', '/');
+      }
+    }
+  }, [isAdmin, setToken]);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#d1d1d1] font-sans flex flex-col">
@@ -24,6 +38,7 @@ function App() {
         stats={globalStats} 
         showAdd={showAdd} 
         setShowAdd={setShowAdd}
+        isAdmin={isAdmin}
       />
 
       <main className="flex-1 max-w-[1200px] mx-auto w-full p-6">
@@ -45,6 +60,7 @@ function App() {
             loading={loading} 
             monitorHistory={monitorHistory} 
             onDelete={deleteMonitor} 
+            isAdmin={isAdmin}
           />
         </div>
       </main>

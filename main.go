@@ -36,6 +36,7 @@ func main() {
 	monitor.StartWorker(database)
 
 	server := api.NewServer(database)
+	server.AdminToken = os.Getenv("ADMIN_TOKEN")
 
 	distFS, err := fs.Sub(frontend, "web/dist")
 	if err != nil {

@@ -23,6 +23,11 @@ func (s *Server) handleMonitors(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeleteMonitor(w http.ResponseWriter, r *http.Request) {
+	if s.AdminToken != "" && r.Header.Get("Authorization") != s.AdminToken {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	idStr := r.URL.Query().Get("id")
 	if idStr == "" {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
@@ -55,6 +60,11 @@ func (s *Server) handleGetMonitors(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePostMonitor(w http.ResponseWriter, r *http.Request) {
+	if s.AdminToken != "" && r.Header.Get("Authorization") != s.AdminToken {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
 	var m models.Monitor
 	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)

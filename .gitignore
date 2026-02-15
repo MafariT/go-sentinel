@@ -16,6 +16,7 @@ monitor.db-journal
 .vscode/
 *.swp
 *.swo
+.env
 
 .DS_Store
 Thumbs.db

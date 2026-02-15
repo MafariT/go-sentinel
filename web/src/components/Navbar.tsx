@@ -6,9 +6,10 @@ interface NavbarProps {
   stats: MonitorStats;
   showAdd: boolean;
   setShowAdd: (show: boolean) => void;
+  isAdmin: boolean;
 }
 
-export function Navbar({ monitorCount, stats, showAdd, setShowAdd }: NavbarProps) {
+export function Navbar({ monitorCount, stats, showAdd, setShowAdd, isAdmin }: NavbarProps) {
   return (
     <nav className="border-b border-[#262626] bg-[#111111] h-14 flex items-center justify-between px-6 sticky top-0 z-10">
       <div className="flex items-center gap-2">
@@ -25,12 +26,15 @@ export function Navbar({ monitorCount, stats, showAdd, setShowAdd }: NavbarProps
               <Clock size={12} className="text-blue-500" />
               {stats.avgLatency}ms Avg
           </span>
-          <button 
-              onClick={() => setShowAdd(!showAdd)}
-              className="bg-[#f6821f] hover:bg-[#eb7612] text-white px-3 py-1.5 rounded font-bold transition-colors ml-2"
-          >
-              {showAdd ? 'Cancel' : '+ Add Monitor'}
-          </button>
+          
+          {isAdmin && (
+            <button 
+                onClick={() => setShowAdd(!showAdd)}
+                className="bg-[#f6821f] hover:bg-[#eb7612] text-white px-3 py-1.5 rounded font-bold transition-colors ml-2"
+            >
+                {showAdd ? 'Cancel' : '+ Add Monitor'}
+            </button>
+          )}
       </div>
     </nav>
   );

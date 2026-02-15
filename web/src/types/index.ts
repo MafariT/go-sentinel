@@ -21,3 +21,11 @@ export interface MonitorStats {
   down: number;
   avgLatency: number;
 }
+
+export interface Incident {
+  id: number;
+  title: string;
+  description: string;
+  status: 'investigating' | 'monitoring' | 'resolved';
+  created_at: string;
+}

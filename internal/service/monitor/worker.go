@@ -41,6 +41,10 @@ func StartWorker(database *sql.DB) {
 							})
 							if err != nil {
 								log.Printf("Worker error: failed to save check for %s: %v", t.Name, err)
+							} else {
+								if err := db.UpdateDailyStats(database, t.ID, result.IsUp, result.Latency); err != nil {
+									log.Printf("Worker error: failed to update stats for %s: %v", t.Name, err)
+								}
 							}
 						}(target)
 					}

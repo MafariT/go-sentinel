@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import type { Monitor, Check, MonitorStats } from '../types';
+import type { Monitor, Check, MonitorStats, Incident } from '../types';
 
 const API_BASE = '';
 
@@ -9,12 +9,15 @@ type GroupedChecks = Record<number, Check[]>;
 interface UseMonitorsReturn {
   monitors: Monitor[];
   checks: GroupedChecks;
+  incidents: Incident[];
   loading: boolean;
   showAdd: boolean;
   setShowAdd: (show: boolean) => void;
   addMonitor: (name: string, url: string, interval: number) => Promise<boolean>;
   deleteMonitor: (id: number) => Promise<void>;
-  monitorHistory: GroupedChecks; // History is now directly the grouped checks
+  addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
+  deleteIncident: (id: number) => Promise<void>;
+  monitorHistory: GroupedChecks;
   globalStats: MonitorStats;
   isAdmin: boolean;
   setToken: (token: string | null) => void;
@@ -23,6 +26,7 @@ interface UseMonitorsReturn {
 export function useMonitors(): UseMonitorsReturn {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [checks, setChecks] = useState<GroupedChecks>({});
+  const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [token, setToken] = useState<string | null>(localStorage.getItem('admin_token'));
@@ -37,12 +41,14 @@ export function useMonitors(): UseMonitorsReturn {
 
   const fetchData = async () => {
     try {
-      const [monRes, checkRes] = await Promise.all([
+      const [monRes, checkRes, incRes] = await Promise.all([
         axios.get(`${API_BASE}/monitors`),
-        axios.get(`${API_BASE}/checks?limit=50`)
+        axios.get(`${API_BASE}/checks?limit=50`),
+        axios.get(`${API_BASE}/incidents`)
       ]);
       setMonitors(monRes.data || []);
       setChecks(checkRes.data || {});
+      setIncidents(incRes.data || []);
     } catch (err) {
       console.error('Data fetch failed', err);
     } finally {
@@ -90,6 +96,37 @@ export function useMonitors(): UseMonitorsReturn {
     }
   };
 
+  const addIncident = async (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => {
+    try {
+      await axios.post(`${API_BASE}/incidents`, { title, description, status }, {
+        headers: { Authorization: token }
+      });
+      fetchData();
+      return true;
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('Unauthorized');
+        setToken(null);
+      }
+      return false;
+    }
+  };
+
+  const deleteIncident = async (id: number) => {
+    if (!confirm('Delete this incident?')) return;
+    try {
+      await axios.delete(`${API_BASE}/incidents?id=${id}`, {
+        headers: { Authorization: token }
+      });
+      fetchData();
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('Unauthorized');
+        setToken(null);
+      }
+    }
+  };
+
   const monitorHistory = useMemo(() => {
     const history: GroupedChecks = {};
     Object.entries(checks).forEach(([monitorId, monitorChecks]) => {
@@ -101,7 +138,7 @@ export function useMonitors(): UseMonitorsReturn {
   const globalStats = useMemo<MonitorStats>(() => {
     const latestChecks = monitors.map(m => {
        const mChecks = checks[m.id];
-       return mChecks && mChecks.length > 0 ? mChecks[0] : null; // First is newest
+       return mChecks && mChecks.length > 0 ? mChecks[0] : null; 
     }).filter((c): c is Check => !!c);
 
     const upCount = latestChecks.filter(c => c.is_up).length;
@@ -120,11 +157,14 @@ export function useMonitors(): UseMonitorsReturn {
   return {
     monitors,
     checks,
+    incidents,
     loading,
     showAdd,
     setShowAdd,
     addMonitor,
     deleteMonitor,
+    addIncident,
+    deleteIncident,
     monitorHistory,
     globalStats,
     isAdmin: !!token,

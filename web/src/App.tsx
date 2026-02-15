@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useMonitors } from './hooks/useMonitors';
 import { Navbar } from './components/Navbar';
 import { DashboardStats } from './components/DashboardStats';
+import { IncidentList } from './components/IncidentList';
 import { MonitorForm } from './components/MonitorForm';
 import { MonitorList } from './components/MonitorList';
 import { Footer } from './components/Footer';
@@ -10,11 +11,14 @@ function App() {
   const {
     monitors,
     checks,
+    incidents,
     loading,
     showAdd,
     setShowAdd,
     addMonitor,
     deleteMonitor,
+    addIncident,
+    deleteIncident,
     monitorHistory,
     globalStats,
     isAdmin,
@@ -55,6 +59,13 @@ function App() {
 
       <main className="flex-1 max-w-[1200px] mx-auto w-full p-6">
         <DashboardStats stats={globalStats} />
+        
+        <IncidentList 
+          incidents={incidents} 
+          isAdmin={isAdmin} 
+          onAdd={addIncident}
+          onDelete={deleteIncident}
+        />
 
         {showAdd && <MonitorForm onAdd={addMonitor} />}
 

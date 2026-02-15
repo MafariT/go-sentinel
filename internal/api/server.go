@@ -28,6 +28,8 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/monitors", s.handleMonitors)
 	s.mux.HandleFunc("/checks", s.handleChecks)
 	s.mux.HandleFunc("/version", s.handleVersion)
+	s.mux.HandleFunc("/history", s.handleHistory)
+	s.mux.HandleFunc("/incidents", s.handleIncidents)
 }
 
 func (s *Server) RegisterFrontend(staticFS fs.FS) {
@@ -37,7 +39,7 @@ func (s *Server) RegisterFrontend(staticFS fs.FS) {
 
 func (s *Server) Start(port string) {
 	log.Printf("API Server running on port %s", port)
-	if err := http.ListenAndServe("127.0.0.1:"+port, s.mux); err != nil {
+	if err := http.ListenAndServe(":"+port, s.mux); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }

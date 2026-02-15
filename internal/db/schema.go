@@ -24,6 +24,25 @@ CREATE TABLE IF NOT EXISTS checks (
 
 CREATE INDEX IF NOT EXISTS idx_checks_monitor_id ON checks(monitor_id);
 CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks(checked_at);
+
+CREATE TABLE IF NOT EXISTS daily_stats (
+    monitor_id INTEGER,
+    date DATE,
+    up_count INTEGER DEFAULT 0,
+    total_count INTEGER DEFAULT 0,
+    total_latency INTEGER DEFAULT 0,
+    PRIMARY KEY (monitor_id, date),
+    FOREIGN KEY (monitor_id) REFERENCES monitors (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS incidents (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT,
+    status TEXT NOT NULL, -- 'investigating', 'monitoring', 'resolved'
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 `
 
 func Initialize(db *sql.DB) error {

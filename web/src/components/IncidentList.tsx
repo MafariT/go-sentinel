@@ -1,0 +1,120 @@
+import { useState } from 'react';
+import { AlertTriangle, CheckCircle, Info, Plus, Trash2 } from 'lucide-react';
+import type { Incident } from '../types';
+
+interface IncidentListProps {
+  incidents: Incident[];
+  isAdmin: boolean;
+  onAdd: (title: string, desc: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
+  onDelete: (id: number) => void;
+}
+
+export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentListProps) {
+  const [showForm, setShowForm] = useState(false);
+  const [title, setTitle] = useState('');
+  const [desc, setDesc] = useState('');
+  const [status, setStatus] = useState<'investigating' | 'monitoring' | 'resolved'>('investigating');
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const success = await onAdd(title, desc, status);
+    if (success) {
+      setShowForm(false);
+      setTitle('');
+      setDesc('');
+      setStatus('investigating');
+    }
+  };
+
+  return (
+    <div className="mb-6 space-y-3">
+      {isAdmin && (
+        <div className="flex justify-end mb-2">
+          <button 
+            onClick={() => setShowForm(!showForm)}
+            className="flex items-center gap-1 text-xs font-bold text-[#f6821f] hover:text-[#eb7612] transition-colors"
+          >
+            <Plus size={12} /> Post Incident
+          </button>
+        </div>
+      )}
+
+      {showForm && (
+        <form onSubmit={handleSubmit} className="bg-[#111] border border-[#262626] p-4 rounded-lg mb-4 animate-in fade-in slide-in-from-top-2">
+          <div className="grid gap-3">
+            <input 
+              type="text" placeholder="Title (e.g. Database Connectivity Issue)" 
+              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none"
+              value={title} onChange={e => setTitle(e.target.value)} required
+            />
+            <textarea 
+              placeholder="Description..." 
+              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none h-20"
+              value={desc} onChange={e => setDesc(e.target.value)} required
+            />
+            <div className="flex gap-2">
+              <select 
+                className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none"
+                value={status} onChange={e => setStatus(e.target.value as any)}
+              >
+                <option value="investigating">Investigating</option>
+                <option value="monitoring">Monitoring</option>
+                <option value="resolved">Resolved</option>
+              </select>
+              <button type="submit" className="bg-[#f6821f] hover:bg-[#eb7612] text-white px-4 py-2 rounded text-sm font-bold ml-auto">
+                Post Update
+              </button>
+            </div>
+          </div>
+        </form>
+      )}
+
+      {incidents.length > 0 ? (
+        incidents.map(i => (
+          <div key={i.id} className={`p-4 rounded-lg border flex items-start gap-3 group relative ${
+            i.status === 'resolved' ? 'bg-green-950/10 border-green-900/30' : 
+            i.status === 'monitoring' ? 'bg-blue-950/10 border-blue-900/30' : 
+            'bg-orange-950/10 border-orange-900/30'
+          }`}>
+            <div className="mt-0.5">
+              {i.status === 'resolved' ? <CheckCircle size={18} className="text-green-500" /> :
+               i.status === 'monitoring' ? <Info size={18} className="text-blue-500" /> :
+               <AlertTriangle size={18} className="text-orange-500" />}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <h3 className="font-bold text-sm text-white">{i.title}</h3>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-wider font-bold ${
+                  i.status === 'resolved' ? 'text-green-500 border-green-900/50 bg-green-900/20' : 
+                  i.status === 'monitoring' ? 'text-blue-500 border-blue-900/50 bg-blue-900/20' : 
+                  'text-orange-500 border-orange-900/50 bg-orange-900/20'
+                }`}>
+                  {i.status}
+                </span>
+              </div>
+              <p className="text-sm text-[#888]">{i.description}</p>
+              <div className="text-[10px] text-[#555] mt-2 font-mono">
+                {new Date(i.created_at).toLocaleString()}
+              </div>
+            </div>
+            {isAdmin && (
+              <button 
+                onClick={() => onDelete(i.id)}
+                className="absolute top-2 right-2 text-[#444] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                title="Delete Incident"
+              >
+                <Trash2 size={14} />
+              </button>
+            )}
+          </div>
+        ))
+      ) : (
+        isAdmin && incidents.length === 0 && !showForm && (
+          <div className="text-center text-[#444] text-xs py-2 italic">
+            No active incidents.
+          </div>
+        )
+      )}
+    </div>
+  );
+}

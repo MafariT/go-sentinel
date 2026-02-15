@@ -53,3 +53,23 @@ func SaveCheck(db *sql.DB, check models.Check) error {
 	_, err := db.Exec(query, check.MonitorID, check.StatusCode, check.Latency, check.IsUp)
 	return err
 }
+
+func GetChecks(db *sql.DB, limit int) ([]models.Check, error) {
+	query := "SELECT id, monitor_id, status_code, latency, is_up, checked_at FROM checks ORDER BY checked_at DESC LIMIT ?"
+	rows, err := db.Query(query, limit)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var checks []models.Check
+	for rows.Next() {
+		var c models.Check
+		if err := rows.Scan(&c.ID, &c.MonitorID, &c.StatusCode, &c.Latency, &c.IsUp, &c.CheckedAt); err != nil {
+			return nil, err
+		}
+		checks = append(checks, c)
+	}
+
+	return checks, nil
+}

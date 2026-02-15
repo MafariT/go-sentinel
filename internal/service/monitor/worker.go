@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"go-sentinel/internal/db"
 	"go-sentinel/internal/models"
+	"go-sentinel/internal/service/checker"
 	"log"
 	"time"
 )
@@ -27,7 +28,7 @@ func StartWorker(database *sql.DB) {
 					}
 
 					go func(t models.Monitor) {
-						result := Ping(t.URL)
+						result := checker.PerformHTTPCheck(t.URL)
 
 						err := db.SaveCheck(database, models.Check{
 							MonitorID:  t.ID,

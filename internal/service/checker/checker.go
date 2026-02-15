@@ -1,4 +1,4 @@
-package monitor
+package checker
 
 import (
 	"net/http"
@@ -11,13 +11,13 @@ type CheckResult struct {
 	IsUp       bool
 }
 
-func Ping(url string) CheckResult {
+func PerformHTTPCheck(url string) CheckResult {
 	start := time.Now()
-	clinet := http.Client{
+	client := http.Client{
 		Timeout: 5 * time.Second,
 	}
 	
-	resp, err := clinet.Get(url)
+	resp, err := client.Get(url)
 	latency := time.Since(start).Milliseconds()
 	if err != nil {
 		return CheckResult{
@@ -33,4 +33,4 @@ func Ping(url string) CheckResult {
 		Latency:    latency,
 		IsUp:       resp.StatusCode >= 200 && resp.StatusCode < 300,
 	}
-} 
+}

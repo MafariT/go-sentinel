@@ -6,7 +6,7 @@ import (
 
 	"go-sentinel/internal/api"
 	"go-sentinel/internal/db"
-	"go-sentinel/internal/monitor"
+	"go-sentinel/internal/service/monitor"
 
 	_ "github.com/glebarez/go-sqlite"
 )
@@ -24,6 +24,6 @@ func main() {
 
 	monitor.StartWorker(database)
 
-	server := api.Server{DB: database}
+	server := api.NewServer(database)
 	server.Start("8080")
 }

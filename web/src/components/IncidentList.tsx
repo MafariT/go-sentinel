@@ -32,7 +32,7 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
         <div className="flex justify-end mb-2">
           <button 
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1 text-xs font-bold text-[#f6821f] hover:text-[#eb7612] transition-colors"
+            className="flex items-center gap-1 text-xs font-bold text-[#2f855a] hover:text-[#276749] transition-colors"
           >
             <Plus size={12} /> Post Incident
           </button>
@@ -44,24 +44,24 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
           <div className="grid gap-3">
             <input 
               type="text" placeholder="Title (e.g. Database Connectivity Issue)" 
-              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none"
+              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none"
               value={title} onChange={e => setTitle(e.target.value)} required
             />
             <textarea 
               placeholder="Description..." 
-              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none h-20"
+              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none h-20"
               value={desc} onChange={e => setDesc(e.target.value)} required
             />
             <div className="flex gap-2">
               <select 
-                className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#f6821f] outline-none"
+                className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none"
                 value={status} onChange={e => setStatus(e.target.value as any)}
               >
                 <option value="investigating">Investigating</option>
                 <option value="monitoring">Monitoring</option>
                 <option value="resolved">Resolved</option>
               </select>
-              <button type="submit" className="bg-[#f6821f] hover:bg-[#eb7612] text-white px-4 py-2 rounded text-sm font-bold ml-auto">
+              <button type="submit" className="bg-[#2f855a] hover:bg-[#276749] text-white px-4 py-2 rounded text-sm font-bold ml-auto">
                 Post Update
               </button>
             </div>

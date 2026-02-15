@@ -13,8 +13,10 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/monitors': 'http://localhost:8088',
-      '/checks': 'http://localhost:8088',
+      '^/(monitors|checks|incidents|history|version)': {
+        target: 'http://127.0.0.1:8088',
+        changeOrigin: true,
+      }
     }
   },
   build: {

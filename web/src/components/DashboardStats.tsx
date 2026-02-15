@@ -29,7 +29,7 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
         </div>
 
         {/* Ambient Glow */}
-        <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 ${isHealthy ? 'bg-green-500' : 'bg-red-500'}`} />
+        <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 ${isHealthy ? 'bg-green-500' : 'bg-[#2f855a]'}`} />
       </div>
     </div>
   );

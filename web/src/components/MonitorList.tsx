@@ -21,18 +21,26 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const gridCols = isAdmin 
+    ? 'md:grid-cols-[2fr_3fr_100px_80px_60px]' 
+    : 'md:grid-cols-[2fr_3fr_100px_80px]';
+
   if (loading) {
     return (
-      <div className="space-y-1 p-4">
+      <div className="bg-[#111111]">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-[#1a1a1a] rounded animate-pulse border border-[#262626] flex items-center px-4">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#333] mr-4"></div>
-            <div className="flex-1 space-y-2">
-              <div className="h-3 bg-[#333] rounded w-1/4"></div>
-              <div className="h-2 bg-[#333] rounded w-1/3"></div>
+          <div key={i} className={`grid grid-cols-1 ${gridCols} items-center px-5 py-4 border-b border-[#262626]`}>
+            <div className="flex items-center gap-4">
+              <div className="w-3.5 h-3.5 bg-[#1a1a1a] rounded-full mr-1" />
+              <div className="w-2.5 h-2.5 bg-[#1a1a1a] rounded-full" />
+              <div className="space-y-2 flex-1">
+                <div className="h-3 bg-[#1a1a1a] rounded w-24" />
+              </div>
             </div>
-            <div className="w-32 h-8 bg-[#333] rounded mx-4"></div>
-            <div className="w-12 h-3 bg-[#333] rounded"></div>
+            <div className="h-10 bg-[#161616] rounded mx-4 hidden md:block" />
+            <div className="flex justify-end pr-2"><div className="h-3 bg-[#1a1a1a] rounded w-12" /></div>
+            <div className="flex justify-end pr-2"><div className="h-3 bg-[#1a1a1a] rounded w-10" /></div>
+            {isAdmin && <div className="flex justify-end"><div className="h-4 bg-[#1a1a1a] rounded w-4" /></div>}
           </div>
         ))}
       </div>
@@ -67,9 +75,8 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
           <div key={m.id}>
             <div 
               onClick={() => toggleExpand(m.id)}
-              className={`group grid grid-cols-1 ${gridCols} items-center px-5 py-4 hover:bg-[#161616] transition-all duration-200 cursor-pointer ${i !== monitors.length - 1 || isExpanded ? 'border-b border-[#262626]' : ''}`}
+              className={`group grid grid-cols-1 ${gridCols} items-center px-5 py-4 hover:bg-[#161616] cursor-pointer ${i !== monitors.length - 1 || isExpanded ? 'border-b border-[#262626]' : ''}`}
             >
-              {/* Name & Status Header */}
               <div className="flex items-center gap-4 md:mb-0 mb-3 w-full">
                 <div className="text-[#444] group-hover:text-[#666] transition-colors">
                   {isExpanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
@@ -81,7 +88,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                       {m.name}
                       {isUp === false && <span className="text-[9px] bg-red-900/30 text-red-500 px-1.5 py-0.5 rounded border border-red-900/50 uppercase tracking-wide font-bold animate-pulse">Down</span>}
                     </div>
-                    {/* Mobile Actions */}
                     <div className="md:hidden">
                       {isAdmin && (
                         <button 
@@ -96,7 +102,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                 </div>
               </div>
 
-              {/* Sparkline */}
               <div className="h-12 w-full opacity-70 group-hover:opacity-100 transition-opacity md:pr-6">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data}>
@@ -111,7 +116,7 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                     <Line 
                       type="monotone" 
                       dataKey="latency" 
-                      stroke={isUp === false ? "#fc8181" : "#48bb78"} 
+                      stroke={isUp === false ? "#fc8181" : "#2f855a"} 
                       strokeWidth={1.5} 
                       dot={false} 
                       activeDot={{ r: 3, strokeWidth: 0 }}
@@ -122,11 +127,10 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                 </ResponsiveContainer>
               </div>
 
-              {/* Metrics */}
               <div className="flex justify-between items-center md:contents mt-2 md:mt-0">
                 <div className="flex md:block flex-col items-center">
                   <span className="md:hidden text-[9px] text-[#444] uppercase tracking-wider mb-1">Latency</span>
-                  <div className="text-right text-[12px] font-mono font-bold text-[#f6821f]">
+                  <div className="text-right text-[12px] font-mono font-bold text-[#2f855a]">
                     {lastLatency}ms
                   </div>
                 </div>
@@ -138,7 +142,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                   </div>
                 </div>
 
-                {/* Desktop Actions */}
                 <div className="hidden md:block text-right">
                   {isAdmin && (
                     <button 
@@ -153,7 +156,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
               </div>
             </div>
             
-            {/* Expandable Detail Panel */}
             {isExpanded && (
               <MonitorDetail monitor={m} fetchHistory={fetchHistory} />
             )}

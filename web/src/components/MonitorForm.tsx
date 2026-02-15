@@ -26,17 +26,17 @@ export function MonitorForm({ onAdd }: MonitorFormProps) {
       <form onSubmit={handleSubmit} className="flex gap-3">
         <input 
           type="text" placeholder="Name (e.g. My API)"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#f6821f] flex-1 text-white placeholder-[#444]"
+          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] flex-1 text-white placeholder-[#444]"
           value={newName} onChange={e => setNewName(e.target.value)} required
         />
         <input 
           type="url" placeholder="https://example.com"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#f6821f] flex-[2] text-white placeholder-[#444]"
+          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] flex-[2] text-white placeholder-[#444]"
           value={newUrl} onChange={e => setNewUrl(e.target.value)} required
         />
         <input 
           type="number" placeholder="60s"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#f6821f] w-24 text-white placeholder-[#444]"
+          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] w-24 text-white placeholder-[#444]"
           value={newInterval} onChange={e => setNewInterval(Number(e.target.value))} required
         />
         <button type="submit" className="bg-[#333] hover:bg-[#444] text-white px-6 py-2 rounded text-sm font-bold border border-[#444]">

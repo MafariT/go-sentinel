@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMonitors } from './hooks/useMonitors';
 import { Navbar } from './components/Navbar';
 import { DashboardStats } from './components/DashboardStats';
@@ -6,6 +6,7 @@ import { IncidentList } from './components/IncidentList';
 import { MonitorForm } from './components/MonitorForm';
 import { MonitorList } from './components/MonitorList';
 import { Footer } from './components/Footer';
+import { LoginPage } from './components/LoginPage';
 
 function App() {
   const {
@@ -26,36 +27,41 @@ function App() {
     setToken
   } = useMonitors();
 
+  const [view, setView] = useState<'dashboard' | 'login'>('dashboard');
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('admin') === 'true' && !isAdmin) {
-      const token = prompt('Enter Admin Token to enable Edit Mode:');
-      if (token) {
-        setToken(token);
-        window.history.replaceState({}, '', '/');
-      }
+    if (params.get('login') === 'true') {
+      setView('login');
+      window.history.replaceState({}, '', '/');
     }
-  }, [isAdmin, setToken]);
+  }, []);
+
+  const handleLogin = (token: string) => {
+    setToken(token);
+    setView('dashboard');
+  };
+
+  const handleLogout = () => {
+    setToken(null);
+  };
 
   useEffect(() => {
     const isHealthy = globalStats.down === 0;
     document.title = isHealthy ? "Go-Sentinel • Operational" : `Go-Sentinel • ${globalStats.down} Issue(s)`;
-    
-    const favicon = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-    if (favicon) {
-      const color = isHealthy ? '%232f855a' : '%23e53e3e';
-      favicon.href = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='${color}'><circle cx='12' cy='12' r='10'/></svg>`;
-    }
   }, [globalStats]);
+
+  if (view === 'login') {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-[#d1d1d1] font-sans flex flex-col">
       <Navbar 
-        monitorCount={monitors.length} 
-        stats={globalStats} 
         showAdd={showAdd} 
         setShowAdd={setShowAdd}
         isAdmin={isAdmin}
+        onLogout={handleLogout}
       />
 
       <main className="flex-1 max-w-[1200px] mx-auto w-full p-6">

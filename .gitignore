@@ -20,3 +20,4 @@ monitor.db-journal
 
 .DS_Store
 Thumbs.db
+/tmp

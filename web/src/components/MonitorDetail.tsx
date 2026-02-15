@@ -56,7 +56,7 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
             </div>
             <div className="bg-[#161616] p-3 rounded border border-[#262626]">
               <div className="text-[10px] text-[#666] uppercase tracking-widest font-bold mb-1">Avg Latency</div>
-              <div className="text-xl font-bold text-[#f6821f]">
+              <div className="text-xl font-bold text-[#2f855a]">
                 {avgLatency30d}<span className="text-xs font-normal text-[#666] ml-1">ms</span>
               </div>
             </div>
@@ -68,6 +68,7 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
               <h3 className="text-xs font-bold text-white">Daily History</h3>
             </div>
             <div className="flex gap-[2px] h-8 w-full">
+              {/* Fill empty days if < 30 at the BEGINNING (left side) */}
               {Array.from({ length: 30 - history.length }).map((_, i) => (
                 <div key={`empty-${i}`} className="flex-1 bg-[#1a1a1a] rounded-[1px]" />
               ))}
@@ -105,7 +106,7 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
                 dataKey="date" 
                 stroke="#333" 
                 fontSize={9} 
-                tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
                 tick={{ fill: '#444' }}
               />
               <YAxis stroke="#333" fontSize={9} tick={{ fill: '#444' }} width={30} />
@@ -117,7 +118,7 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
               <Line 
                 type="monotone" 
                 dataKey="avg_latency" 
-                stroke="#f6821f" 
+                stroke="#2f855a" 
                 strokeWidth={2} 
                 dot={false}
                 activeDot={{ r: 4, stroke: '#111', strokeWidth: 2 }}

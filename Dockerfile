@@ -4,6 +4,7 @@ WORKDIR /web
 COPY web/package*.json ./
 RUN npm install
 COPY web/ .
+COPY VERSION ../VERSION
 RUN npm run build
 
 # Build Backend

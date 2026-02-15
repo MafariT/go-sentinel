@@ -19,6 +19,7 @@ function App() {
     deleteMonitor,
     addIncident,
     deleteIncident,
+    getMonitorHistory,
     monitorHistory,
     globalStats,
     isAdmin,
@@ -84,6 +85,7 @@ function App() {
             loading={loading} 
             monitorHistory={monitorHistory} 
             onDelete={deleteMonitor} 
+            fetchHistory={getMonitorHistory}
             isAdmin={isAdmin}
           />
         </div>

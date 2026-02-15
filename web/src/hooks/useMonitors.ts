@@ -17,6 +17,7 @@ interface UseMonitorsReturn {
   deleteMonitor: (id: number) => Promise<void>;
   addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
   deleteIncident: (id: number) => Promise<void>;
+  getMonitorHistory: (id: number) => Promise<any[]>;
   monitorHistory: GroupedChecks;
   globalStats: MonitorStats;
   isAdmin: boolean;
@@ -127,6 +128,16 @@ export function useMonitors(): UseMonitorsReturn {
     }
   };
 
+  const getMonitorHistory = async (id: number) => {
+    try {
+      const res = await axios.get(`${API_BASE}/history?monitor_id=${id}`);
+      return res.data;
+    } catch (err) {
+      console.error(err);
+      return [];
+    }
+  };
+
   const monitorHistory = useMemo(() => {
     const history: GroupedChecks = {};
     Object.entries(checks).forEach(([monitorId, monitorChecks]) => {
@@ -165,6 +176,7 @@ export function useMonitors(): UseMonitorsReturn {
     deleteMonitor,
     addIncident,
     deleteIncident,
+    getMonitorHistory,
     monitorHistory,
     globalStats,
     isAdmin: !!token,

@@ -68,6 +68,10 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
               <h3 className="text-xs font-bold text-white">Daily History</h3>
             </div>
             <div className="flex gap-[2px] h-8 w-full">
+              {Array.from({ length: 30 - history.length }).map((_, i) => (
+                <div key={`empty-${i}`} className="flex-1 bg-[#1a1a1a] rounded-[1px]" />
+              ))}
+              
               {history.map((day) => (
                 <div 
                   key={day.date}
@@ -80,9 +84,6 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
                     {new Date(day.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}: {day.uptime_pct.toFixed(1)}%
                   </div>
                 </div>
-              ))}
-              {Array.from({ length: 30 - history.length }).map((_, i) => (
-                <div key={`empty-${i}`} className="flex-1 bg-[#1a1a1a] rounded-[1px]" />
               ))}
             </div>
             <div className="flex justify-between text-[9px] text-[#444] mt-1 font-mono">

@@ -19,7 +19,7 @@ func CreateMonitor(db *sql.DB, monitor models.Monitor) (int64, error) {
 }
 
 func GetMonitors(db *sql.DB) ([]models.Monitor, error) {
-	query := "SELECT id, name, url, interval, last_checked_at, created_at FROM monitors"
+	query := "SELECT id, name, url, interval, last_checked_at FROM monitors"
 
 	rows, err := db.Query(query)
 	if err != nil {
@@ -31,7 +31,7 @@ func GetMonitors(db *sql.DB) ([]models.Monitor, error) {
 	for rows.Next() {
 		var m models.Monitor
 		var lastChecked sql.NullTime
-		if err := rows.Scan(&m.ID, &m.Name, &m.URL, &m.Interval, &lastChecked, &m.CreatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.Name, &m.URL, &m.Interval, &lastChecked); err != nil {
 			return nil, err
 		}
 		if lastChecked.Valid {
@@ -174,7 +174,7 @@ func CreateIncident(db *sql.DB, incident models.Incident) (int64, error) {
 }
 
 func GetIncidents(db *sql.DB) ([]models.Incident, error) {
-	query := "SELECT id, title, description, status, created_at, updated_at FROM incidents ORDER BY created_at DESC LIMIT 10"
+	query := "SELECT id, title, description, status, created_at FROM incidents ORDER BY created_at DESC LIMIT 10"
 	rows, err := db.Query(query)
 	if err != nil {
 		return nil, err
@@ -184,7 +184,7 @@ func GetIncidents(db *sql.DB) ([]models.Incident, error) {
 	var incidents []models.Incident
 	for rows.Next() {
 		var i models.Incident
-		if err := rows.Scan(&i.ID, &i.Title, &i.Description, &i.Status, &i.CreatedAt, &i.UpdatedAt); err != nil {
+		if err := rows.Scan(&i.ID, &i.Title, &i.Description, &i.Status, &i.CreatedAt); err != nil {
 			return nil, err
 		}
 		incidents = append(incidents, i)

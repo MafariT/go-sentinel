@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ExternalLink, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip, ReferenceLine } from 'recharts';
 import { MonitorDetail } from './MonitorDetail';
 import type { Monitor, Check } from '../types';
@@ -42,9 +42,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
   if (monitors.length === 0) {
     return (
       <div className="p-16 text-center text-[#444] text-sm flex flex-col items-center">
-        <div className="w-16 h-16 bg-[#1a1a1a] rounded-full flex items-center justify-center mb-4">
-          <ExternalLink size={24} className="opacity-20" />
-        </div>
         <p>No monitors configured.</p>
         {isAdmin && <p className="mt-2 text-xs text-[#666]">Click "+ Add Monitor" to start tracking.</p>}
       </div>
@@ -96,15 +93,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                       )}
                     </div>
                   </div>
-                  <a 
-                    href={m.url} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    onClick={(e) => e.stopPropagation()}
-                    className="text-[11px] text-[#666] hover:text-[#f6821f] transition-colors flex items-center gap-1 truncate font-mono mt-0.5"
-                  >
-                    {m.url} <ExternalLink size={10} />
-                  </a>
                 </div>
               </div>
 

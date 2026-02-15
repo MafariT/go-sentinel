@@ -2,33 +2,28 @@ package main
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 
+	"go-sentinel/internal/api"
 	"go-sentinel/internal/db"
-	"go-sentinel/internal/models"
+	"go-sentinel/internal/monitor"
 
 	_ "github.com/glebarez/go-sqlite"
 )
 
 func main() {
-	fmt.Println("Go-Sentinel Starting...")
-
 	database, err := sql.Open("sqlite", "monitor.db")
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer database.Close()
-	
+
 	if err := db.Initialize(database); err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to initialize database: %v", err)
 	}
 
-	if _, err := db.CreateMonitor(database, models.Monitor{
-		Name: "Google",
-		URL: "https://google.com",
-		Interval: 60,
-	}); err != nil {
-		log.Fatal(err)
-	}
+	monitor.StartWorker(database)
+
+	server := api.Server{DB: database}
+	server.Start("8080")
 }

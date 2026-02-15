@@ -38,7 +38,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
 
         return (
           <div key={m.id} className={`group grid grid-cols-[3fr_2fr_100px_80px_60px] items-center px-5 py-4 hover:bg-[#1a1a1a] transition-colors ${i !== monitors.length - 1 ? 'border-b border-[#262626]' : ''}`}>
-            {/* Name & URL */}
             <div className="flex items-center gap-4">
               <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.5)] ${isUp === true ? 'bg-[#2f855a] shadow-[#2f855a]/40' : isUp === false ? 'bg-[#c53030] shadow-[#c53030]/40' : 'bg-[#4a5568]'}`} />
               <div className="min-w-0">
@@ -52,7 +51,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
               </div>
             </div>
 
-            {/* Sparkline */}
             <div className="h-10 w-full opacity-70 group-hover:opacity-100 transition-opacity">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={data}>
@@ -69,17 +67,14 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
               </ResponsiveContainer>
             </div>
 
-            {/* Latency */}
             <div className="text-right text-[12px] font-mono font-bold text-[#f6821f]">
               {lastLatency}ms
             </div>
 
-            {/* Interval */}
             <div className="text-right text-[12px] text-[#666] font-mono">
               {m.interval}s
             </div>
 
-            {/* Actions */}
             <div className="text-right">
               {isAdmin && (
                 <button 

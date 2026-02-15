@@ -9,5 +9,14 @@ export default defineConfig({
       '/monitors': 'http://localhost:8088',
       '/checks': 'http://localhost:8088',
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom', 'recharts', 'lucide-react', 'axios'],
+        },
+      },
+    },
+  },
 })

@@ -44,5 +44,9 @@ func main() {
 	}
 	server.RegisterFrontend(distFS)
 
-	server.Start("8088")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8088"
+	}
+	server.Start(port)
 }

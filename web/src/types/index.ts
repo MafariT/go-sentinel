@@ -16,7 +16,8 @@ export interface Check {
 }
 
 export interface MonitorStats {
-  totalChecks: number;
+  total: number;
+  up: number;
+  down: number;
   avgLatency: number;
-  upMonitors: number;
 }

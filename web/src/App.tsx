@@ -45,7 +45,6 @@ function App() {
         {showAdd && <MonitorForm onAdd={addMonitor} />}
 
         <div className="border border-[#262626] rounded-md overflow-hidden bg-[#111111]">
-          {/* Table Header */}
           <div className="grid grid-cols-[3fr_2fr_100px_80px_60px] border-b border-[#262626] bg-[#161616] px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-[#666]">
             <div>Monitor Details</div>
             <div>Latency Trend (Last 50)</div>

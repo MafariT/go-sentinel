@@ -4,9 +4,10 @@ services:
     ports:
       - "8088:8088"
     volumes:
-      - data:/app/data
+      - ./data:/app/data
     environment:
       - DB_PATH=/app/data/monitor.db
+      - ADMIN_TOKEN=
     restart: always
 
 volumes:

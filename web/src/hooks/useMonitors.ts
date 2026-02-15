@@ -102,16 +102,21 @@ export function useMonitors(): UseMonitorsReturn {
   }, [checks]);
 
   const globalStats = useMemo<MonitorStats>(() => {
-    const totalChecks = checks.length;
-    const avgLatency = totalChecks > 0 
-      ? Math.round(checks.reduce((acc, c) => acc + c.latency, 0) / totalChecks) 
-      : 0;
-    const upMonitors = monitors.filter(m => {
-       const lastCheck = checks.find(c => c.monitor_id === m.id);
-       return lastCheck ? lastCheck.is_up : true;
-    }).length;
+    const latestChecks = monitors.map(m => {
+      return checks.find(c => c.monitor_id === m.id);
+    }).filter((c): c is Check => !!c);
 
-    return { totalChecks, avgLatency, upMonitors };
+    const upCount = latestChecks.filter(c => c.is_up).length;
+    const avgLatency = latestChecks.length > 0 
+      ? Math.round(latestChecks.reduce((acc, c) => acc + c.latency, 0) / latestChecks.length) 
+      : 0;
+
+    return { 
+      total: monitors.length, 
+      up: upCount, 
+      down: monitors.length - upCount,
+      avgLatency 
+    };
   }, [checks, monitors]);
 
   return {

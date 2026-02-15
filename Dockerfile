@@ -7,7 +7,7 @@ COPY web/ .
 RUN npm run build
 
 # Build Backend
-FROM golang:1.23-alpine AS builder
+FROM golang:1.24-alpine AS builder
 WORKDIR /app
 RUN apk add --no-cache gcc musl-dev
 COPY go.mod go.sum ./
@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /web/dist ./web/dist
-RUN CGO_ENABLED=1 GOOS=linux go build -o go-sentinel main.go
+RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o go-sentinel main.go
 
 # Final Stage
 FROM alpine:latest

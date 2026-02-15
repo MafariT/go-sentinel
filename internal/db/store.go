@@ -55,28 +55,33 @@ func SaveCheck(db *sql.DB, check models.Check) error {
 	return err
 }
 
-func GetChecks(db *sql.DB, limit int) ([]models.Check, error) {
-	query := "SELECT id, monitor_id, status_code, latency, is_up, checked_at FROM checks ORDER BY checked_at DESC LIMIT ?"
+func GetChecks(db *sql.DB, limitPerMonitor int) (map[int64][]models.Check, error) {
+	query := `
+		SELECT id, monitor_id, status_code, latency, is_up, checked_at
+		FROM (
+			SELECT *, ROW_NUMBER() OVER (PARTITION BY monitor_id ORDER BY checked_at DESC) as rn
+			FROM checks
+		)
+		WHERE rn <= ?
+	`
 
-	rows, err := db.Query(query, limit)
+	rows, err := db.Query(query, limitPerMonitor)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	var checks []models.Check
+	grouped := make(map[int64][]models.Check)
 	for rows.Next() {
 		var c models.Check
 		if err := rows.Scan(&c.ID, &c.MonitorID, &c.StatusCode, &c.Latency, &c.IsUp, &c.CheckedAt); err != nil {
 			return nil, err
 		}
-		checks = append(checks, c)
+		grouped[c.MonitorID] = append(grouped[c.MonitorID], c)
 	}
-	
-	return checks, nil
+
+	return grouped, nil
 }
-
-
 
 func DeleteMonitor(db *sql.DB, id int) error {
 	_, err := db.Exec("DELETE FROM checks WHERE monitor_id = ?", id)

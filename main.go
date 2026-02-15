@@ -16,8 +16,11 @@ import (
 
 //go:embed web/dist/*
 var frontend embed.FS
+var Version = "dev"
 
 func main() {
+	log.Printf("Go-Sentinel %s starting...", Version)
+
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
 		dbPath = "monitor.db"
@@ -35,7 +38,7 @@ func main() {
 
 	monitor.StartWorker(database)
 
-	server := api.NewServer(database)
+	server := api.NewServer(database, Version)
 	server.AdminToken = os.Getenv("ADMIN_TOKEN")
 
 	distFS, err := fs.Sub(frontend, "web/dist")

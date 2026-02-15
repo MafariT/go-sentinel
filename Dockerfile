@@ -15,7 +15,8 @@ RUN go mod download
 COPY . .
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /web/dist ./web/dist
-RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o go-sentinel main.go
+RUN VERSION=$(cat VERSION) && \
+    CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -ldflags "-X main.Version=${VERSION}" -o go-sentinel main.go
 
 # Final Stage
 FROM alpine:latest

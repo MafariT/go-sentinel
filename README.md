@@ -8,37 +8,39 @@ A lightweight, zero-configuration service monitoring dashboard built with **Go**
 - **Zero-Config Database:** Uses SQLite with automatic 7-day data retention.
 - **Hidden Admin Mode:** Securely manage monitors via a secret URL parameter.
 
-## Quick Start (Docker)
+## Quick Start (Deployment)
 
-1. **Clone the repo:**
+### Docker
+1. **Build the image:**
    ```bash
-   git clone https://github.com/mafarit/go-sentinel.git
-   cd go-sentinel
+   docker build -t go-sentinel .
    ```
 
-2. **Run with Docker Compose:**
+2. **Run the container:**
    ```bash
-   docker-compose up -d
+   docker run -d \
+     -p 8088:8088 \
+     -v ./data:/app/data \
+     -e ADMIN_TOKEN=your_secret_token \
+     -e DB_PATH=/app/data/monitor.db \
+     --name go-sentinel \
+     go-sentinel
    ```
-
-3. **Access the Dashboard:**
-   Visit `http://localhost:8088`.
 
 ## Admin Mode
 By default, the dashboard is **read-only**. To manage monitors:
-1. Visit `http://localhost:8088/?admin=true`.
+1. Visit `http://your-domain.com/?admin=true`.
 2. Enter your `ADMIN_TOKEN`.
 3. The dashboard will now show **+ Add Monitor** and **Delete** buttons.
 
 ## Configuration
 | Variable | Description | Default |
 | :--- | :--- | :--- |
-| `ADMIN_TOKEN` | Secret key required to add/delete monitors | (empty) |
+| `ADMIN_TOKEN` | Secret key required to add/delete monitors | - |
 | `DB_PATH` | Path to the SQLite database file | `monitor.db` |
 | `PORT` | Port for the web server | `8088` |
 
 ## Manual Build
-If you want to build the binary manually:
 ```bash
 # Build the frontend
 cd web && npm install && npm run build && cd ..

@@ -21,6 +21,7 @@ RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o go-sentinel main.
 FROM alpine:latest
 WORKDIR /app
 RUN apk add --no-cache ca-certificates sqlite-libs
+RUN mkdir -p /app/data
 COPY --from=builder /app/go-sentinel .
 EXPOSE 8088
 CMD ["./go-sentinel"]

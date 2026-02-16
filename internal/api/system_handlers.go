@@ -22,6 +22,13 @@ func (s *Server) handleChecks(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	if limit > 100 {
+		limit = 100
+	}
+	if limit < 1 {
+		limit = 1
+	}
+
 	checksMap, err := db.GetChecks(s.DB, limit)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)

@@ -1,7 +1,9 @@
 package checker
 
 import (
+	"net"
 	"net/http"
+	"syscall"
 	"time"
 )
 
@@ -14,9 +16,26 @@ type CheckResult struct {
 var httpClient = &http.Client{
 	Timeout: 5 * time.Second,
 	Transport: &http.Transport{
-		MaxIdleConns:        100,
-		IdleConnTimeout:     90 * time.Second,
-		DisableKeepAlives:   false,
+		MaxIdleConns:      100,
+		IdleConnTimeout:   90 * time.Second,
+		DisableKeepAlives: false,
+		DialContext: (&net.Dialer{
+			Timeout:   5 * time.Second,
+			KeepAlive: 30 * time.Second,
+			Control: func(network, address string, c syscall.RawConn) error {
+				host, _, err := net.SplitHostPort(address)
+				if err != nil {
+					return err
+				}
+				ip := net.ParseIP(host)
+				if ip != nil {
+					if ip.IsLoopback() || ip.IsPrivate() || ip.IsUnspecified() || ip.IsLinkLocalUnicast() {
+						return net.InvalidAddrError("connection to private, loopback, or link-local IP is prohibited")
+					}
+				}
+				return nil
+			},
+		}).DialContext,
 	},
 }
 

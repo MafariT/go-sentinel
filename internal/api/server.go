@@ -62,13 +62,21 @@ func (s *Server) RegisterFrontend(staticFS fs.FS) {
 	s.mux.Handle("/", fileServer)
 }
 
+func (s *Server) securityHeaders(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		w.Header().Set("X-Frame-Options", "DENY")
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.mux.ServeHTTP(w, r)
+	s.securityHeaders(s.mux).ServeHTTP(w, r)
 }
 
 func (s *Server) Start(port string) {
 	log.Printf("API Server running on port %s", port)
-	if err := http.ListenAndServe(":"+port, s.mux); err != nil {
+	if err := http.ListenAndServe(":"+port, s); err != nil {
 		log.Fatalf("Server failed: %v", err)
 	}
 }

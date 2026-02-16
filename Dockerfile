@@ -22,8 +22,13 @@ RUN VERSION=$(cat VERSION) && \
 # Final Stage
 FROM alpine:latest
 WORKDIR /app
-RUN apk add --no-cache ca-certificates sqlite-libs
-RUN mkdir -p /app/data
-COPY --from=builder /app/go-sentinel .
+RUN apk add --no-cache ca-certificates sqlite-libs && \
+    adduser -D go-sentinel && \
+    mkdir -p /app/data && \
+    chown -R go-sentinel:go-sentinel /app
+
+COPY --from=builder --chown=go-sentinel:go-sentinel /app/go-sentinel .
+
+USER go-sentinel
 EXPOSE 8088
 CMD ["./go-sentinel"]

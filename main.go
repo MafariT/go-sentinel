@@ -23,43 +23,52 @@ func main() {
 	log.Printf("Go-Sentinel %s starting...", Version)
 
 	if err := godotenv.Load(); err != nil {
-		log.Println("No .env file found or error loading it, using environment variables")
+		log.Println("Note: .env file not found, using system environment variables")
 	}
 
-	dbPath := os.Getenv("DB_PATH")
-	if dbPath == "" {
-		dbPath = "monitor.db"
-	}
+	// Configuration
+	var (
+		dbPath     = getEnv("DB_PATH", "monitor.db")
+		port       = getEnv("PORT", "8088")
+		adminToken = os.Getenv("ADMIN_TOKEN")
+	)
 
+	// Database Setup
 	database, err := sql.Open("sqlite", dbPath)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed to open database: %v", err)
 	}
 	defer database.Close()
 
 	if err := db.Initialize(database); err != nil {
-		log.Fatalf("Failed to initialize database: %v", err)
+		log.Fatalf("Failed to initialize database schema: %v", err)
 	}
 
+	// Services & Server Initialization
 	monitor.StartWorker(database)
 
 	server := api.NewServer(database, Version)
-	server.AdminToken = os.Getenv("ADMIN_TOKEN")
+	server.AdminToken = adminToken
+
 	if server.AdminToken == "" {
-		log.Println("WARNING: ADMIN_TOKEN is not set. Admin features will be disabled (Read-only mode).")
+		log.Println("WARNING: ADMIN_TOKEN is not set. Admin features are disabled (Read-only mode).")
 	} else {
-		log.Println("Admin mode enabled with token from environment.")
+		log.Println("Admin mode enabled.")
 	}
 
-	distFS, err := fs.Sub(frontend, "web/dist")
-	if err != nil {
-		log.Fatal(err)
+	// Frontend Registration
+	if distFS, err := fs.Sub(frontend, "web/dist"); err == nil {
+		server.RegisterFrontend(distFS)
+	} else {
+		log.Printf("Warning: Failed to locate embedded frontend: %v", err)
 	}
-	server.RegisterFrontend(distFS)
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8088"
-	}
 	server.Start(port)
+}
+
+func getEnv(key, fallback string) string {
+	if value, ok := os.LookupEnv(key); ok {
+		return value
+	}
+	return fallback
 }

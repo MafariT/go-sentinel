@@ -44,10 +44,11 @@ export function useMonitors(): UseMonitorsReturn {
 
   const fetchData = async () => {
     try {
+      const config = token ? { headers: { Authorization: token } } : {};
       const [monRes, checkRes, incRes] = await Promise.all([
-        axios.get(`${API_BASE}/monitors`),
-        axios.get(`${API_BASE}/checks?limit=50`),
-        axios.get(`${API_BASE}/incidents`)
+        axios.get(`${API_BASE}/monitors`, config),
+        axios.get(`${API_BASE}/checks?limit=50`, config),
+        axios.get(`${API_BASE}/incidents`, config)
       ]);
       setMonitors(monRes.data || []);
       setChecks(checkRes.data || {});
@@ -63,7 +64,7 @@ export function useMonitors(): UseMonitorsReturn {
     fetchData();
     const timer = setInterval(fetchData, 3000);
     return () => clearInterval(timer);
-  }, []);
+  }, [token]);
 
   const addMonitor = async (name: string, url: string, interval: number) => {
     try {

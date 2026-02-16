@@ -97,7 +97,7 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Monitor_History", func(t *testing.T) {
-		url := fmt.Sprintf("/history?monitor_id=%d", monitorID)
+		url := fmt.Sprintf("/history/%d", monitorID)
 		req := httptest.NewRequest("GET", url, nil)
 		w := httptest.NewRecorder()
 		s.ServeHTTP(w, req)
@@ -133,7 +133,7 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Incident_Delete", func(t *testing.T) {
-		url := fmt.Sprintf("/incidents?id=%d", incidentID)
+		url := fmt.Sprintf("/incidents/%d", incidentID)
 		req := httptest.NewRequest("DELETE", url, nil)
 		req.Header.Set("Authorization", "secret")
 		w := httptest.NewRecorder()
@@ -144,7 +144,7 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Monitor_Delete_Unauthorized", func(t *testing.T) {
-		url := fmt.Sprintf("/monitors?id=%d", monitorID)
+		url := fmt.Sprintf("/monitors/%d", monitorID)
 		req := httptest.NewRequest("DELETE", url, nil)
 		req.Header.Set("Authorization", "wrong-token")
 		w := httptest.NewRecorder()
@@ -155,7 +155,7 @@ func TestAPI(t *testing.T) {
 	})
 
 	t.Run("Monitor_Delete", func(t *testing.T) {
-		url := fmt.Sprintf("/monitors?id=%d", monitorID)
+		url := fmt.Sprintf("/monitors/%d", monitorID)
 		req := httptest.NewRequest("DELETE", url, nil)
 		req.Header.Set("Authorization", "secret")
 		w := httptest.NewRecorder()

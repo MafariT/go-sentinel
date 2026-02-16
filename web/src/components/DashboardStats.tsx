@@ -17,14 +17,14 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
             {isHealthy ? <Activity size={24} className="text-green-500" /> : <AlertCircle size={24} className="text-red-500" />}
           </div>
           <div>
-            <div className={`text-sm font-bold uppercase tracking-widest ${isHealthy ? 'text-green-500' : 'text-red-500'}`}>System Status</div>
-            <div className={`text-xl font-bold ${isHealthy ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-[15px] font-bold uppercase tracking-widest ${isHealthy ? 'text-green-500' : 'text-red-500'}`}>System Status</div>
+            <div className={`text-2xl font-bold ${isHealthy ? 'text-green-400' : 'text-red-400'}`}>
               {isHealthy ? 'All Systems Operational' : `${stats.down} Service(s) experiencing issues`}
             </div>
           </div>
         </div>
         
-        <div className="z-10 text-[10px] font-mono text-[#444] uppercase tracking-tighter">
+        <div className="z-10 text-[11px] font-mono text-[#444] uppercase tracking-tighter">
           Real-time check
         </div>
 

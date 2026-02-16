@@ -49,15 +49,15 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
         <div className="lg:col-span-1 space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="bg-[#161616] p-3 rounded border border-[#262626]">
-              <div className="text-[10px] text-[#666] uppercase tracking-widest font-bold mb-1">30-Day Uptime</div>
-              <div className={`text-xl font-bold ${Number(uptime30d) >= 99 ? 'text-green-500' : 'text-orange-500'}`}>
+              <div className="text-[11px] text-[#666] uppercase tracking-widest font-bold mb-1">30-Day Uptime</div>
+              <div className={`text-2xl font-bold ${Number(uptime30d) >= 99 ? 'text-green-500' : 'text-orange-500'}`}>
                 {uptime30d}%
               </div>
             </div>
             <div className="bg-[#161616] p-3 rounded border border-[#262626]">
-              <div className="text-[10px] text-[#666] uppercase tracking-widest font-bold mb-1">Avg Latency</div>
-              <div className="text-xl font-bold text-[#2f855a]">
-                {avgLatency30d}<span className="text-xs font-normal text-[#666] ml-1">ms</span>
+              <div className="text-[11px] text-[#666] uppercase tracking-widest font-bold mb-1">Avg Latency</div>
+              <div className="text-2xl font-bold text-[#2f855a]">
+                {avgLatency30d}<span className="text-sm font-normal text-[#666] ml-1">ms</span>
               </div>
             </div>
           </div>
@@ -67,7 +67,7 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
               <Calendar size={14} className="text-[#666]" />
               <h3 className="text-xs font-bold text-white">Daily History</h3>
             </div>
-            <div className="flex gap-[2px] h-8 w-full">
+            <div className="flex gap-[2px] h-12 w-full">
               {/* Fill empty days if < 30 at the BEGINNING (left side) */}
               {Array.from({ length: 30 - history.length }).map((_, i) => (
                 <div key={`empty-${i}`} className="flex-1 bg-[#1a1a1a] rounded-[1px]" />
@@ -98,22 +98,22 @@ export function MonitorDetail({ monitor, fetchHistory }: MonitorDetailProps) {
         <div className="lg:col-span-2 h-48 lg:h-auto">
           <div className="flex items-center gap-2 mb-2">
             <Activity size={14} className="text-[#666]" />
-            <h3 className="text-xs font-bold text-white">Daily Latency Trend</h3>
+            <h3 className="text-[13px] font-bold text-white">Daily Latency Trend</h3>
           </div>
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={history}>
               <XAxis 
                 dataKey="date" 
                 stroke="#333" 
-                fontSize={9} 
+                fontSize={10} 
                 tickFormatter={(val) => new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} 
                 tick={{ fill: '#444' }}
               />
-              <YAxis stroke="#333" fontSize={9} tick={{ fill: '#444' }} width={30} />
+              <YAxis stroke="#333" fontSize={10} tick={{ fill: '#444' }} width={30} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#111', border: '1px solid #333' }}
-                labelStyle={{ color: '#888', fontSize: '11px' }}
-                itemStyle={{ fontSize: '11px' }}
+                labelStyle={{ color: '#888', fontSize: '12px' }}
+                itemStyle={{ fontSize: '12px' }}
               />
               <Line 
                 type="monotone" 

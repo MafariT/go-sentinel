@@ -107,3 +107,14 @@ func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
 }
+
+func (s *Server) handleAllHistory(w http.ResponseWriter, r *http.Request) {
+	stats, err := db.GetAllMonitorHistory(s.DB)
+	if err != nil {
+		http.Error(w, "Database error", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
+}

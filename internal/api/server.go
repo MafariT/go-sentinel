@@ -57,6 +57,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("GET /checks", s.handleChecks)
 	s.mux.HandleFunc("GET /version", s.handleVersion)
 	s.mux.HandleFunc("POST /verify-token", s.handleVerifyToken)
+	s.mux.HandleFunc("GET /history", s.handleAllHistory)
 	s.mux.HandleFunc("GET /history/{id}", s.handleHistory)
 
 	s.mux.HandleFunc("GET /incidents", s.handleGetIncidents)

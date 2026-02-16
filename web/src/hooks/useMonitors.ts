@@ -21,6 +21,7 @@ interface UseMonitorsReturn {
   verifyToken: (token: string) => Promise<boolean>;
   getMonitorHistory: (id: number) => Promise<any[]>;
   monitorHistory: GroupedChecks;
+  dailyHistory: Record<number, any[]>;
   globalStats: MonitorStats;
   isAdmin: boolean;
   setToken: (token: string | null) => void;
@@ -29,6 +30,7 @@ interface UseMonitorsReturn {
 export function useMonitors(): UseMonitorsReturn {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [checks, setChecks] = useState<GroupedChecks>({});
+  const [dailyHistory, setDailyHistory] = useState<Record<number, any[]>>({});
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
@@ -45,14 +47,16 @@ export function useMonitors(): UseMonitorsReturn {
   const fetchData = async () => {
     try {
       const config = token ? { headers: { Authorization: token } } : {};
-      const [monRes, checkRes, incRes] = await Promise.all([
+      const [monRes, checkRes, incRes, historyRes] = await Promise.all([
         axios.get(`${API_BASE}/monitors`, config),
         axios.get(`${API_BASE}/checks?limit=50`, config),
-        axios.get(`${API_BASE}/incidents`, config)
+        axios.get(`${API_BASE}/incidents`, config),
+        axios.get(`${API_BASE}/history`, config)
       ]);
       setMonitors(monRes.data || []);
       setChecks(checkRes.data || {});
       setIncidents(incRes.data || []);
+      setDailyHistory(historyRes.data || {});
     } catch (err) {
       console.error('Data fetch failed', err);
     } finally {
@@ -210,6 +214,7 @@ export function useMonitors(): UseMonitorsReturn {
     verifyToken,
     getMonitorHistory,
     monitorHistory,
+    dailyHistory,
     globalStats,
     isAdmin: !!token,
     setToken

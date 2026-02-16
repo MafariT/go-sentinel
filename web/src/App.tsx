@@ -25,6 +25,7 @@ function App() {
     verifyToken,
     getMonitorHistory,
     monitorHistory,
+    dailyHistory,
     globalStats,
     isAdmin,
     setToken
@@ -68,7 +69,7 @@ function App() {
         onLogout={handleLogout}
       />
 
-      <main className="flex-1 max-w-[1200px] mx-auto w-full p-6">
+      <main className="flex-1 w-full p-6">
         <DashboardStats stats={globalStats} />
         
         <IncidentList 
@@ -96,7 +97,7 @@ function App() {
         )}
 
         <div className="border border-[#262626] rounded-md overflow-hidden bg-[#111111]">
-          <div className={`hidden md:grid ${isAdmin ? 'grid-cols-[2fr_3fr_100px_80px_80px]' : 'grid-cols-[2fr_3fr_100px_80px]'} border-b border-[#262626] bg-[#161616] px-5 py-3 text-[10px] font-bold uppercase tracking-widest text-[#666]`}>
+          <div className={`hidden md:grid ${isAdmin ? 'grid-cols-[2fr_3fr_100px_80px_80px]' : 'grid-cols-[2fr_3fr_100px_80px]'} border-b border-[#262626] bg-[#161616] px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-[#666]`}>
             <div>Monitor Details</div>
             <div>Latency Trend (Last 50)</div>
             <div className="text-right">Latency</div>
@@ -109,6 +110,7 @@ function App() {
             checks={checks} 
             loading={loading} 
             monitorHistory={monitorHistory} 
+            dailyHistory={dailyHistory}
             onDelete={deleteMonitor}
             onEdit={setEditingMonitor} 
             fetchHistory={getMonitorHistory}

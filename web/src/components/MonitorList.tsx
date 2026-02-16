@@ -9,13 +9,14 @@ interface MonitorListProps {
   checks: Record<number, Check[]>;
   loading: boolean;
   monitorHistory: Record<number, any[]>;
+  dailyHistory: Record<number, any[]>;
   onDelete: (id: number) => void;
   onEdit: (monitor: Monitor) => void;
   fetchHistory: (id: number) => Promise<any[]>;
   isAdmin: boolean;
 }
 
-export function MonitorList({ monitors, checks, loading, monitorHistory, onDelete, onEdit, fetchHistory, isAdmin }: MonitorListProps) {
+export function MonitorList({ monitors, checks, loading, monitorHistory, dailyHistory, onDelete, onEdit, fetchHistory, isAdmin }: MonitorListProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const toggleExpand = (id: number) => {
@@ -62,6 +63,7 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
       {monitors.map((m, i) => {
         const isExpanded = expandedId === m.id;
         const data = monitorHistory[m.id] || [];
+        const daily = [...(dailyHistory[m.id] || [])].reverse();
         const latestCheck = checks[m.id] && checks[m.id].length > 0 ? checks[m.id][0] : null;
         const isUp = latestCheck?.is_up ?? null;
         const lastLatency = data.length > 0 ? data[data.length - 1].latency : 0;
@@ -81,9 +83,9 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                 <div className={`w-2.5 h-2.5 rounded-full shrink-0 shadow-[0_0_8px_rgba(0,0,0,0.5)] transition-all duration-500 ${isUp === true ? 'bg-[#2f855a] shadow-[#2f855a]/40' : isUp === false ? 'bg-[#c53030] shadow-[#c53030]/40' : 'bg-[#4a5568]'}`} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center justify-between md:justify-start gap-2">
-                    <div className="text-[14px] font-bold text-white leading-tight flex items-center gap-2">
+                    <div className="text-[15px] font-bold text-white leading-tight flex items-center gap-2">
                       {m.name}
-                      {isUp === false && <span className="text-[9px] bg-red-900/30 text-red-500 px-1.5 py-0.5 rounded border border-red-900/50 uppercase tracking-wide font-bold animate-pulse">Down</span>}
+                      {isUp === false && <span className="text-[10px] bg-red-900/30 text-red-500 px-1.5 py-0.5 rounded border border-red-900/50 uppercase tracking-wide font-bold animate-pulse">Down</span>}
                     </div>
                     <div className="md:hidden flex gap-2">
                       {isAdmin && (
@@ -104,17 +106,41 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                       )}
                     </div>
                   </div>
+                  
+                  {/* Mini Heatmap */}
+                  <div className="flex gap-[1px] h-3 mt-2 w-full max-w-[240px]">
+                    {Array.from({ length: Math.max(0, 30 - daily.length) }).map((_, i) => (
+                      <div key={`empty-${i}`} className="flex-1 bg-[#1a1a1a] rounded-[1px]" />
+                    ))}
+                    {daily.map((day, idx) => (
+                      <div 
+                        key={idx}
+                        className={`flex-1 rounded-[1px] ${
+                          day.uptime_pct >= 99 ? 'bg-[#2f855a]' : 
+                          day.uptime_pct >= 95 ? 'bg-orange-500' : 'bg-red-600'
+                        }`}
+                        title={`${new Date(day.date).toLocaleDateString()}: ${day.uptime_pct.toFixed(1)}%`}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <div className="h-12 w-full opacity-70 group-hover:opacity-100 transition-opacity md:pr-6 pointer-events-none">
+              <div className="h-12 w-full opacity-70 group-hover:opacity-100 transition-opacity md:pr-6" onClick={(e) => e.stopPropagation()}>
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data}>
                     <Tooltip 
                       contentStyle={{ backgroundColor: '#111', border: '1px solid #333', fontSize: '10px', padding: '4px 8px' }}
                       itemStyle={{ color: '#fff' }}
-                      labelStyle={{ display: 'none' }}
+                      labelStyle={{ color: '#666', marginBottom: '2px', fontSize: '9px' }}
                       cursor={{ stroke: '#333' }}
+                      labelFormatter={(_, payload) => {
+                        if (payload && payload.length > 0) {
+                          const date = new Date(payload[0].payload.checked_at);
+                          return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                        }
+                        return '';
+                      }}
                       formatter={(value: any) => [`${value}ms`, 'Latency']}
                     />
                     <ReferenceLine y={avg} stroke="#333" strokeDasharray="3 3" />
@@ -134,15 +160,15 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
 
               <div className="flex justify-between items-center md:contents mt-2 md:mt-0">
                 <div className="flex md:block flex-col items-center">
-                  <span className="md:hidden text-[9px] text-[#444] uppercase tracking-wider mb-1">Latency</span>
-                  <div className="text-right text-[12px] font-mono font-bold text-[#2f855a]">
+                  <span className="md:hidden text-[10px] text-[#444] uppercase tracking-wider mb-1">Latency</span>
+                  <div className="text-right text-[13px] font-mono font-bold text-[#2f855a]">
                     {lastLatency}ms
                   </div>
                 </div>
 
                 <div className="flex md:block flex-col items-center">
-                  <span className="md:hidden text-[9px] text-[#444] uppercase tracking-wider mb-1">Interval</span>
-                  <div className="text-right text-[12px] text-[#666] font-mono">
+                  <span className="md:hidden text-[10px] text-[#444] uppercase tracking-wider mb-1">Interval</span>
+                  <div className="text-right text-[13px] text-[#666] font-mono">
                     {m.interval}s
                   </div>
                 </div>

@@ -83,8 +83,8 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-bold text-sm text-white">{i.title}</h3>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded border uppercase tracking-wider font-bold ${
+                <h3 className="font-bold text-[15px] text-white">{i.title}</h3>
+                <span className={`text-[11px] px-1.5 py-0.5 rounded border uppercase tracking-wider font-bold ${
                   i.status === 'resolved' ? 'text-green-500 border-green-900/50 bg-green-900/20' : 
                   i.status === 'monitoring' ? 'text-blue-500 border-blue-900/50 bg-blue-900/20' : 
                   'text-orange-500 border-orange-900/50 bg-orange-900/20'
@@ -92,8 +92,8 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
                   {i.status}
                 </span>
               </div>
-              <p className="text-sm text-[#888]">{i.description}</p>
-              <div className="text-[10px] text-[#555] mt-2 font-mono">
+              <p className="text-[15px] text-[#888]">{i.description}</p>
+              <div className="text-[11px] text-[#555] mt-2 font-mono">
                 {new Date(i.created_at).toLocaleString()}
               </div>
             </div>

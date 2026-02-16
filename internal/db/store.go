@@ -173,6 +173,48 @@ func GetMonitorHistory(db *sql.DB, monitorID int64) ([]models.DailyStat, error) 
 	return stats, nil
 }
 
+func GetAllMonitorHistory(db *sql.DB) (map[int64][]models.DailyStat, error) {
+	query := `
+		SELECT monitor_id, date, up_count, total_count, total_latency
+		FROM daily_stats
+		WHERE date >= date('now', '-30 days')
+		ORDER BY monitor_id, date DESC
+	`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	grouped := make(map[int64][]models.DailyStat)
+	for rows.Next() {
+		var monitorID int64
+		var date string
+		var up, total, lat int64
+		if err := rows.Scan(&monitorID, &date, &up, &total, &lat); err != nil {
+			return nil, err
+		}
+
+		pct := 0.0
+		if total > 0 {
+			pct = (float64(up) / float64(total)) * 100
+		}
+		
+		avg := int64(0)
+		if total > 0 {
+			avg = lat / total
+		}
+
+		grouped[monitorID] = append(grouped[monitorID], models.DailyStat{
+			MonitorID:  monitorID,
+			Date:       date,
+			UptimePct:  pct,
+			AvgLatency: avg,
+		})
+	}
+	return grouped, nil
+}
+
 func CreateIncident(db *sql.DB, incident models.Incident) (int64, error) {
 	query := "INSERT INTO incidents (title, description, status) VALUES (?, ?, ?)"
 	result, err := db.Exec(query, incident.Title, incident.Description, incident.Status)

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { Trash2, Edit2, ChevronDown, ChevronRight } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, YAxis, Tooltip, ReferenceLine } from 'recharts';
 import { MonitorDetail } from './MonitorDetail';
 import type { Monitor, Check } from '../types';
@@ -10,11 +10,12 @@ interface MonitorListProps {
   loading: boolean;
   monitorHistory: Record<number, any[]>;
   onDelete: (id: number) => void;
+  onEdit: (monitor: Monitor) => void;
   fetchHistory: (id: number) => Promise<any[]>;
   isAdmin: boolean;
 }
 
-export function MonitorList({ monitors, checks, loading, monitorHistory, onDelete, fetchHistory, isAdmin }: MonitorListProps) {
+export function MonitorList({ monitors, checks, loading, monitorHistory, onDelete, onEdit, fetchHistory, isAdmin }: MonitorListProps) {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const toggleExpand = (id: number) => {
@@ -22,7 +23,7 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
   };
 
   const gridCols = isAdmin 
-    ? 'md:grid-cols-[2fr_3fr_100px_80px_60px]' 
+    ? 'md:grid-cols-[2fr_3fr_100px_80px_80px]' 
     : 'md:grid-cols-[2fr_3fr_100px_80px]';
 
   if (loading) {
@@ -67,10 +68,6 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
         
         const avg = data.length > 0 ? data.reduce((a: any, b: any) => a + b.latency, 0) / data.length : 0;
 
-        const gridCols = isAdmin 
-          ? 'md:grid-cols-[2fr_3fr_100px_80px_60px]' 
-          : 'md:grid-cols-[2fr_3fr_100px_80px]';
-
         return (
           <div key={m.id}>
             <div 
@@ -88,21 +85,29 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                       {m.name}
                       {isUp === false && <span className="text-[9px] bg-red-900/30 text-red-500 px-1.5 py-0.5 rounded border border-red-900/50 uppercase tracking-wide font-bold animate-pulse">Down</span>}
                     </div>
-                    <div className="md:hidden">
+                    <div className="md:hidden flex gap-2">
                       {isAdmin && (
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); onDelete(m.id); }} 
-                          className="text-[#444] hover:text-red-500"
-                        >
-                          <Trash2 size={14} />
-                        </button>
+                        <>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onEdit(m); }} 
+                            className="text-[#666] hover:text-white"
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                          <button 
+                            onClick={(e) => { e.stopPropagation(); onDelete(m.id); }} 
+                            className="text-[#666] hover:text-red-500"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
                       )}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="h-12 w-full opacity-70 group-hover:opacity-100 transition-opacity md:pr-6">
+              <div className="h-12 w-full opacity-70 group-hover:opacity-100 transition-opacity md:pr-6 pointer-events-none">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={data}>
                     <Tooltip 
@@ -142,15 +147,24 @@ export function MonitorList({ monitors, checks, loading, monitorHistory, onDelet
                   </div>
                 </div>
 
-                <div className="hidden md:block text-right">
+                <div className="hidden md:block text-right z-10 relative">
                   {isAdmin && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); onDelete(m.id); }}
-                      className="text-[#333] hover:text-red-500 p-2 rounded transition-colors opacity-0 group-hover:opacity-100"
-                      title="Delete Monitor"
-                    >
-                      <Trash2 size={15} />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onEdit(m); }}
+                        className="text-[#666] hover:text-white p-2 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        title="Edit Monitor"
+                      >
+                        <Edit2 size={15} />
+                      </button>
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); onDelete(m.id); }}
+                        className="text-[#666] hover:text-red-500 p-2 rounded transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete Monitor"
+                      >
+                        <Trash2 size={15} />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

@@ -18,6 +18,15 @@ func CreateMonitor(db *sql.DB, monitor models.Monitor) (int64, error) {
 	return result.LastInsertId()
 }
 
+func UpdateMonitor(db *sql.DB, monitor models.Monitor) error {
+	if monitor.URL == "" {
+		_, err := db.Exec("UPDATE monitors SET name = ?, interval = ? WHERE id = ?", monitor.Name, monitor.Interval, monitor.ID)
+		return err
+	}
+	_, err := db.Exec("UPDATE monitors SET name = ?, url = ?, interval = ? WHERE id = ?", monitor.Name, monitor.URL, monitor.Interval, monitor.ID)
+	return err
+}
+
 func GetMonitors(db *sql.DB) ([]models.Monitor, error) {
 	query := "SELECT id, name, url, interval, last_checked_at FROM monitors"
 

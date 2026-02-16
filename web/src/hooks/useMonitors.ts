@@ -14,6 +14,7 @@ interface UseMonitorsReturn {
   showAdd: boolean;
   setShowAdd: (show: boolean) => void;
   addMonitor: (name: string, url: string, interval: number) => Promise<boolean>;
+  updateMonitor: (id: number, name: string, url: string, interval: number) => Promise<boolean>;
   deleteMonitor: (id: number) => Promise<void>;
   addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
   deleteIncident: (id: number) => Promise<void>;
@@ -70,6 +71,22 @@ export function useMonitors(): UseMonitorsReturn {
         headers: { Authorization: token }
       });
       setShowAdd(false);
+      fetchData();
+      return true;
+    } catch (err: any) {
+      if (err.response?.status === 401) {
+        alert('Unauthorized: Invalid or missing token');
+        setToken(null);
+      }
+      return false;
+    }
+  };
+
+  const updateMonitor = async (id: number, name: string, url: string, interval: number) => {
+    try {
+      await axios.put(`${API_BASE}/monitors`, { id, name, url, interval }, {
+        headers: { Authorization: token }
+      });
       fetchData();
       return true;
     } catch (err: any) {
@@ -185,6 +202,7 @@ export function useMonitors(): UseMonitorsReturn {
     showAdd,
     setShowAdd,
     addMonitor,
+    updateMonitor,
     deleteMonitor,
     addIncident,
     deleteIncident,

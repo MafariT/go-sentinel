@@ -12,6 +12,7 @@ import (
 	"go-sentinel/internal/service/monitor"
 
 	_ "github.com/glebarez/go-sqlite"
+	"github.com/joho/godotenv"
 )
 
 //go:embed web/dist/*
@@ -20,6 +21,10 @@ var Version = "dev"
 
 func main() {
 	log.Printf("Go-Sentinel %s starting...", Version)
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("No .env file found or error loading it, using environment variables")
+	}
 
 	dbPath := os.Getenv("DB_PATH")
 	if dbPath == "" {
@@ -40,6 +45,11 @@ func main() {
 
 	server := api.NewServer(database, Version)
 	server.AdminToken = os.Getenv("ADMIN_TOKEN")
+	if server.AdminToken == "" {
+		log.Println("WARNING: ADMIN_TOKEN is not set. Admin features will be disabled (Read-only mode).")
+	} else {
+		log.Println("Admin mode enabled with token from environment.")
+	}
 
 	distFS, err := fs.Sub(frontend, "web/dist")
 	if err != nil {

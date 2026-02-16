@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/sha256"
+	"crypto/subtle"
 	"database/sql"
 	"io/fs"
 	"log"
@@ -12,6 +14,28 @@ type Server struct {
 	mux        *http.ServeMux
 	AdminToken string
 	Version    string
+}
+
+func (s *Server) isAdmin(r *http.Request) bool {
+	if s.AdminToken == "" {
+		return false
+	}
+	receivedToken := r.Header.Get("Authorization")
+
+	actualHash := sha256.Sum256([]byte(s.AdminToken))
+	receivedHash := sha256.Sum256([]byte(receivedToken))
+
+	return subtle.ConstantTimeCompare(actualHash[:], receivedHash[:]) == 1
+}
+
+func (s *Server) adminOnly(next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if !s.isAdmin(r) {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		next(w, r)
+	}
 }
 
 func NewServer(database *sql.DB, version string) *Server {
@@ -36,6 +60,10 @@ func (s *Server) registerRoutes() {
 func (s *Server) RegisterFrontend(staticFS fs.FS) {
 	fileServer := http.FileServer(http.FS(staticFS))
 	s.mux.Handle("/", fileServer)
+}
+
+func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	s.mux.ServeHTTP(w, r)
 }
 
 func (s *Server) Start(port string) {

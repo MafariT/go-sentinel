@@ -50,12 +50,6 @@ function App() {
   useEffect(() => {
     const isHealthy = globalStats.down === 0;
     document.title = isHealthy ? "Go-Sentinel • Operational" : `Go-Sentinel • ${globalStats.down} Issue(s)`;
-    
-    const favicon = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
-    if (favicon) {
-      const color = isHealthy ? '%232f855a' : '%23e53e3e';
-      favicon.href = `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='${color}'><circle cx='12' cy='12' r='10'/></svg>`;
-    }
   }, [globalStats]);
 
   if (view === 'login') {

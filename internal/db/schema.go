@@ -49,3 +49,14 @@ func Initialize(db *sql.DB) error {
 	_, err := db.Exec(schema)
 	return err
 }
+
+func InitializeInMem() (*sql.DB, error) {
+	db, err := sql.Open("sqlite", ":memory:")
+	if err != nil {
+		return nil, err
+	}
+	if err := Initialize(db); err != nil {
+		return nil, err
+	}
+	return db, nil
+}

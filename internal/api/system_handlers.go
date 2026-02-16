@@ -47,7 +47,10 @@ func (s *Server) handleVerifyToken(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	s.adminOnly(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})(w, r)
+	if !s.isAdmin(r) {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }

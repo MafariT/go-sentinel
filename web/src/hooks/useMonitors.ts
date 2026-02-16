@@ -102,7 +102,7 @@ export function useMonitors(): UseMonitorsReturn {
   const deleteMonitor = async (id: number) => {
     if (!confirm('Delete this monitor?')) return;
     try {
-      await axios.delete(`${API_BASE}/monitors?id=${id}`, {
+      await axios.delete(`${API_BASE}/monitors/${id}`, {
         headers: { Authorization: token }
       });
       fetchData();
@@ -135,7 +135,7 @@ export function useMonitors(): UseMonitorsReturn {
   const deleteIncident = async (id: number) => {
     if (!confirm('Delete this incident?')) return;
     try {
-      await axios.delete(`${API_BASE}/incidents?id=${id}`, {
+      await axios.delete(`${API_BASE}/incidents/${id}`, {
         headers: { Authorization: token }
       });
       fetchData();
@@ -149,7 +149,7 @@ export function useMonitors(): UseMonitorsReturn {
 
   const getMonitorHistory = async (id: number) => {
     try {
-      const res = await axios.get(`${API_BASE}/history?monitor_id=${id}`);
+      const res = await axios.get(`${API_BASE}/history/${id}`);
       return res.data;
     } catch (err) {
       console.error(err);

@@ -49,12 +49,19 @@ func NewServer(database *sql.DB, version string) *Server {
 }
 
 func (s *Server) registerRoutes() {
-	s.mux.HandleFunc("/monitors", s.handleMonitors)
-	s.mux.HandleFunc("/checks", s.handleChecks)
-	s.mux.HandleFunc("/version", s.handleVersion)
-	s.mux.HandleFunc("/verify-token", s.handleVerifyToken)
-	s.mux.HandleFunc("/history", s.handleHistory)
-	s.mux.HandleFunc("/incidents", s.handleIncidents)
+	s.mux.HandleFunc("GET /monitors", s.handleGetMonitors)
+	s.mux.HandleFunc("POST /monitors", s.adminOnly(s.handlePostMonitor))
+	s.mux.HandleFunc("PUT /monitors", s.adminOnly(s.handlePutMonitor))
+	s.mux.HandleFunc("DELETE /monitors/{id}", s.adminOnly(s.handleDeleteMonitor))
+
+	s.mux.HandleFunc("GET /checks", s.handleChecks)
+	s.mux.HandleFunc("GET /version", s.handleVersion)
+	s.mux.HandleFunc("POST /verify-token", s.handleVerifyToken)
+	s.mux.HandleFunc("GET /history/{id}", s.handleHistory)
+
+	s.mux.HandleFunc("GET /incidents", s.handleGetIncidents)
+	s.mux.HandleFunc("POST /incidents", s.adminOnly(s.handlePostIncident))
+	s.mux.HandleFunc("DELETE /incidents/{id}", s.adminOnly(s.handleDeleteIncident))
 }
 
 func (s *Server) RegisterFrontend(staticFS fs.FS) {

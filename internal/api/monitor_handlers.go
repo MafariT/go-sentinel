@@ -9,23 +9,8 @@ import (
 	"go-sentinel/internal/models"
 )
 
-func (s *Server) handleMonitors(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		s.handleGetMonitors(w, r)
-	case http.MethodPost:
-		s.adminOnly(s.handlePostMonitor)(w, r)
-	case http.MethodPut:
-		s.adminOnly(s.handlePutMonitor)(w, r)
-	case http.MethodDelete:
-		s.adminOnly(s.handleDeleteMonitor)(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
 func (s *Server) handleDeleteMonitor(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	idStr := r.PathValue("id")
 	if idStr == "" {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
 		return
@@ -101,7 +86,7 @@ func (s *Server) handlePutMonitor(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("monitor_id")
+	idStr := r.PathValue("id")
 	if idStr == "" {
 		http.Error(w, "Missing monitor_id", http.StatusBadRequest)
 		return

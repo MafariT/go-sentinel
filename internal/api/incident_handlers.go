@@ -9,19 +9,6 @@ import (
 	"go-sentinel/internal/models"
 )
 
-func (s *Server) handleIncidents(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		s.handleGetIncidents(w, r)
-	case http.MethodPost:
-		s.adminOnly(s.handlePostIncident)(w, r)
-	case http.MethodDelete:
-		s.adminOnly(s.handleDeleteIncident)(w, r)
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
 func (s *Server) handleGetIncidents(w http.ResponseWriter, r *http.Request) {
 	incidents, err := db.GetIncidents(s.DB)
 	if err != nil {
@@ -50,7 +37,7 @@ func (s *Server) handlePostIncident(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleDeleteIncident(w http.ResponseWriter, r *http.Request) {
-	idStr := r.URL.Query().Get("id")
+	idStr := r.PathValue("id")
 	if idStr == "" {
 		http.Error(w, "Missing id parameter", http.StatusBadRequest)
 		return

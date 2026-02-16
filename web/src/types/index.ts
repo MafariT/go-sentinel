@@ -1,6 +1,7 @@
 export interface Monitor {
   id: number;
   name: string;
+  url: string;
   interval: number;
   last_checked_at: string | null;
 }

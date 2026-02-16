@@ -3,15 +3,26 @@ import { Activity, Lock, ArrowRight } from 'lucide-react';
 
 interface LoginPageProps {
   onLogin: (token: string) => void;
-  error?: string;
+  verifyToken: (token: string) => Promise<boolean>;
 }
 
-export function LoginPage({ onLogin }: LoginPageProps) {
+export function LoginPage({ onLogin, verifyToken }: LoginPageProps) {
   const [token, setToken] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(token);
+    setError('');
+    setLoading(true);
+
+    const isValid = await verifyToken(token);
+    if (isValid) {
+      onLogin(token);
+    } else {
+      setError('Invalid admin token. Access denied.');
+    }
+    setLoading(false);
   };
 
   return (
@@ -33,20 +44,28 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             <input 
               type="password" 
               placeholder="Admin Token"
-              className="w-full bg-[#111] border border-[#262626] rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-[#2f855a] transition-colors placeholder-[#444]"
+              className={`w-full bg-[#111] border rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none transition-colors placeholder-[#444] ${error ? 'border-red-500' : 'border-[#262626] focus:border-[#2f855a]'}`}
               value={token}
               onChange={(e) => setToken(e.target.value)}
               required
               autoFocus
+              disabled={loading}
             />
           </div>
+
+          {error && (
+            <p className="text-red-500 text-xs font-bold text-center animate-in fade-in slide-in-from-top-1">
+              {error}
+            </p>
+          )}
           
           <button 
             type="submit"
-            className="w-full bg-[#2f855a] hover:bg-[#276749] text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 group"
+            disabled={loading}
+            className="w-full bg-[#2f855a] hover:bg-[#276749] disabled:bg-[#2f855a]/50 disabled:cursor-not-allowed text-white font-bold py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 group"
           >
-            Authenticate
-            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+            {loading ? 'Verifying...' : 'Authenticate'}
+            {!loading && <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />}
           </button>
         </form>
 

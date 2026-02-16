@@ -17,6 +17,7 @@ interface UseMonitorsReturn {
   deleteMonitor: (id: number) => Promise<void>;
   addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
   deleteIncident: (id: number) => Promise<void>;
+  verifyToken: (token: string) => Promise<boolean>;
   getMonitorHistory: (id: number) => Promise<any[]>;
   monitorHistory: GroupedChecks;
   globalStats: MonitorStats;
@@ -138,6 +139,17 @@ export function useMonitors(): UseMonitorsReturn {
     }
   };
 
+  const verifyToken = async (testToken: string) => {
+    try {
+      await axios.post(`${API_BASE}/verify-token`, {}, {
+        headers: { Authorization: testToken }
+      });
+      return true;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const monitorHistory = useMemo(() => {
     const history: GroupedChecks = {};
     Object.entries(checks).forEach(([monitorId, monitorChecks]) => {
@@ -176,6 +188,7 @@ export function useMonitors(): UseMonitorsReturn {
     deleteMonitor,
     addIncident,
     deleteIncident,
+    verifyToken,
     getMonitorHistory,
     monitorHistory,
     globalStats,

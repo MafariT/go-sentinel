@@ -13,7 +13,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '^/(monitors|checks|incidents|history|version)': {
+      '^/(monitors|checks|incidents|history|version|verify-token)': {
         target: 'http://127.0.0.1:8088',
         changeOrigin: true,
       }

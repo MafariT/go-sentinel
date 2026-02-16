@@ -28,6 +28,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("/monitors", s.handleMonitors)
 	s.mux.HandleFunc("/checks", s.handleChecks)
 	s.mux.HandleFunc("/version", s.handleVersion)
+	s.mux.HandleFunc("/verify-token", s.handleVerifyToken)
 	s.mux.HandleFunc("/history", s.handleHistory)
 	s.mux.HandleFunc("/incidents", s.handleIncidents)
 }

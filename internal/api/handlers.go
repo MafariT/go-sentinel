@@ -116,6 +116,21 @@ func (s *Server) handleVersion(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"version": s.Version})
 }
 
+func (s *Server) handleVerifyToken(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	receivedToken := r.Header.Get("Authorization")
+	if s.AdminToken != "" && receivedToken != s.AdminToken {
+		http.Error(w, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}
+
 func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("monitor_id")
 	if idStr == "" {

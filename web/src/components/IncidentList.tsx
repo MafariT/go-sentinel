@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { AlertTriangle, CheckCircle, Info, Plus, Trash2 } from 'lucide-react';
-import type { Incident } from '../types';
+import type { Incident } from '@/types';
 
 interface IncidentListProps {
   incidents: Incident[];
@@ -9,7 +9,8 @@ interface IncidentListProps {
   onDelete: (id: number) => void;
 }
 
-export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentListProps) {
+// Using React.memo for performance optimization - prevents unnecessary re-renders
+export const IncidentList = React.memo(function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentListProps) {
   const [showForm, setShowForm] = useState(false);
   const [title, setTitle] = useState('');
   const [desc, setDesc] = useState('');
@@ -32,7 +33,7 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
         <div className="flex justify-end mb-2">
           <button 
             onClick={() => setShowForm(!showForm)}
-            className="flex items-center gap-1 text-xs font-bold text-[#2f855a] hover:text-[#276749] transition-colors"
+            className="flex items-center gap-1 text-xs font-bold text-status-up hover:text-status-up-dark transition-colors"
           >
             <Plus size={12} /> Post Incident
           </button>
@@ -40,28 +41,37 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
       )}
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-[#111] border border-[#262626] p-4 rounded-lg mb-4 animate-in fade-in slide-in-from-top-2">
+        <form onSubmit={handleSubmit} className="bg-card border border-border p-4 rounded-lg mb-4 animate-fadeIn">
           <div className="grid gap-3">
             <input 
-              type="text" placeholder="Title (e.g. Database Connectivity Issue)" 
-              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none"
-              value={title} onChange={e => setTitle(e.target.value)} required
+              type="text" 
+              placeholder="Title (e.g. Database Connectivity Issue)" 
+              className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+              value={title} 
+              onChange={e => setTitle(e.target.value)} 
+              required
             />
             <textarea 
               placeholder="Description..." 
-              className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none h-20"
-              value={desc} onChange={e => setDesc(e.target.value)} required
+              className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent h-20"
+              value={desc} 
+              onChange={e => setDesc(e.target.value)} 
+              required
             />
             <div className="flex gap-2">
               <select 
-                className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm text-white focus:border-[#2f855a] outline-none"
-                value={status} onChange={e => setStatus(e.target.value as any)}
+                className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                value={status} 
+                onChange={e => setStatus(e.target.value as 'investigating' | 'monitoring' | 'resolved')}
               >
                 <option value="investigating">Investigating</option>
                 <option value="monitoring">Monitoring</option>
                 <option value="resolved">Resolved</option>
               </select>
-              <button type="submit" className="bg-[#2f855a] hover:bg-[#276749] text-white px-4 py-2 rounded text-sm font-bold ml-auto">
+              <button 
+                type="submit" 
+                className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2 rounded text-sm font-bold ml-auto transition-opacity"
+              >
                 Post Update
               </button>
             </div>
@@ -92,16 +102,17 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
                   {i.status}
                 </span>
               </div>
-              <p className="text-[15px] text-[#888]">{i.description}</p>
-              <div className="text-[11px] text-[#555] mt-2 font-mono">
+              <p className="text-[15px] text-muted-foreground">{i.description}</p>
+              <div className="text-[11px] text-muted-foreground/60 mt-2 font-mono">
                 {new Date(i.created_at).toLocaleString()}
               </div>
             </div>
             {isAdmin && (
               <button 
                 onClick={() => onDelete(i.id)}
-                className="absolute top-2 right-2 text-[#444] hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                className="absolute top-2 right-2 text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity p-1"
                 title="Delete Incident"
+                aria-label={`Delete incident: ${i.title}`}
               >
                 <Trash2 size={14} />
               </button>
@@ -110,11 +121,11 @@ export function IncidentList({ incidents, isAdmin, onAdd, onDelete }: IncidentLi
         ))
       ) : (
         isAdmin && incidents.length === 0 && !showForm && (
-          <div className="text-center text-[#444] text-xs py-2 italic">
+          <div className="text-center text-muted-foreground text-xs py-2 italic">
             No active incidents.
           </div>
         )
       )}
     </div>
   );
-}
+});

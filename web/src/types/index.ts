@@ -27,3 +27,19 @@ export interface Incident {
   status: 'investigating' | 'monitoring' | 'resolved';
   created_at: string;
 }
+
+export interface DailyStats {
+  date: string;
+  uptime_pct: number;
+  avg_latency: number;
+}
+
+export interface ApiError {
+  response?: {
+    status: number;
+    data?: {
+      error?: string;
+    };
+  };
+  message: string;
+}

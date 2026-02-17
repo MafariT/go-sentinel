@@ -1,5 +1,5 @@
 import { Activity, AlertCircle } from 'lucide-react';
-import type { MonitorStats } from '../types';
+import type { MonitorStats } from '@/types';
 
 interface DashboardStatsProps {
   stats: MonitorStats;
@@ -11,25 +11,25 @@ export function DashboardStats({ stats }: DashboardStatsProps) {
   return (
     <div className="mb-6">
       {/* System Status Card */}
-      <div className={`p-5 rounded-lg border ${isHealthy ? 'bg-green-950/10 border-green-900/30' : 'bg-red-950/10 border-red-900/30'} flex items-center justify-between h-20 relative overflow-hidden group`}>
+      <div className={`p-5 rounded-lg border ${isHealthy ? 'bg-primary/5 border-primary/30' : 'bg-destructive/5 border-destructive/30'} flex items-center justify-between h-20 relative overflow-hidden group`}>
         <div className="flex items-center gap-4 z-10">
-          <div className={`p-2 rounded-full ${isHealthy ? 'bg-green-500/20' : 'bg-red-500/20'}`}>
-            {isHealthy ? <Activity size={24} className="text-green-500" /> : <AlertCircle size={24} className="text-red-500" />}
+          <div className={`p-2 rounded-full ${isHealthy ? 'bg-primary/20' : 'bg-destructive/20'}`}>
+            {isHealthy ? <Activity size={24} className="text-primary" /> : <AlertCircle size={24} className="text-destructive" />}
           </div>
           <div>
-            <div className={`text-[15px] font-bold uppercase tracking-widest ${isHealthy ? 'text-green-500' : 'text-red-500'}`}>System Status</div>
-            <div className={`text-2xl font-bold ${isHealthy ? 'text-green-400' : 'text-red-400'}`}>
+            <div className={`text-[15px] font-bold uppercase tracking-widest ${isHealthy ? 'text-primary' : 'text-destructive'}`}>System Status</div>
+            <div className={`text-2xl font-bold ${isHealthy ? 'text-primary' : 'text-destructive'}`}>
               {isHealthy ? 'All Systems Operational' : `${stats.down} Service(s) experiencing issues`}
             </div>
           </div>
         </div>
         
-        <div className="z-10 text-[11px] font-mono text-[#444] uppercase tracking-tighter">
+        <div className="z-10 text-[11px] font-mono text-muted-foreground uppercase tracking-tighter">
           Real-time check
         </div>
 
         {/* Ambient Glow */}
-        <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 ${isHealthy ? 'bg-green-500' : 'bg-[#2f855a]'}`} />
+        <div className={`absolute -bottom-10 -right-10 w-32 h-32 rounded-full blur-3xl opacity-20 ${isHealthy ? 'bg-primary' : 'bg-destructive'}`} />
       </div>
     </div>
   );

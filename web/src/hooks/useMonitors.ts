@@ -1,8 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import type { Monitor, Check, MonitorStats, Incident } from '../types';
+import type { Monitor, Check, MonitorStats, Incident, DailyStats, ApiError } from '@/types';
+import { toast, confirmAction, handleApiError } from '@/utils/notifications';
 
-const API_BASE = '';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
+const POLLING_INTERVAL = 3000;
 
 type GroupedChecks = Record<number, Check[]>;
 
@@ -19,9 +21,9 @@ interface UseMonitorsReturn {
   addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
   deleteIncident: (id: number) => Promise<void>;
   verifyToken: (token: string) => Promise<boolean>;
-  getMonitorHistory: (id: number) => Promise<any[]>;
+  getMonitorHistory: (id: number) => Promise<DailyStats[]>;
   monitorHistory: GroupedChecks;
-  dailyHistory: Record<number, any[]>;
+  dailyHistory: Record<number, DailyStats[]>;
   globalStats: MonitorStats;
   isAdmin: boolean;
   setToken: (token: string | null) => void;
@@ -30,21 +32,32 @@ interface UseMonitorsReturn {
 export function useMonitors(): UseMonitorsReturn {
   const [monitors, setMonitors] = useState<Monitor[]>([]);
   const [checks, setChecks] = useState<GroupedChecks>({});
-  const [dailyHistory, setDailyHistory] = useState<Record<number, any[]>>({});
+  const [dailyHistory, setDailyHistory] = useState<Record<number, DailyStats[]>>({});
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('admin_token'));
+  const [token, setToken] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem('admin_token');
+    } catch (err) {
+      console.error('Failed to read from localStorage:', err);
+      return null;
+    }
+  });
 
   useEffect(() => {
-    if (token) {
-      localStorage.setItem('admin_token', token);
-    } else {
-      localStorage.removeItem('admin_token');
+    try {
+      if (token) {
+        localStorage.setItem('admin_token', token);
+      } else {
+        localStorage.removeItem('admin_token');
+      }
+    } catch (err) {
+      console.error('Failed to write to localStorage:', err);
     }
   }, [token]);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const config = token ? { headers: { Authorization: token } } : {};
       const [monRes, checkRes, incRes, historyRes] = await Promise.all([
@@ -62,106 +75,127 @@ export function useMonitors(): UseMonitorsReturn {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchData();
-    const timer = setInterval(fetchData, 3000);
+    const timer = setInterval(fetchData, POLLING_INTERVAL);
     return () => clearInterval(timer);
-  }, [token]);
+  }, [fetchData]);
 
-  const addMonitor = async (name: string, url: string, interval: number) => {
+  const addMonitor = useCallback(async (name: string, url: string, interval: number) => {
     try {
       await axios.post(`${API_BASE}/monitors`, { name, url, interval }, {
         headers: { Authorization: token }
       });
       setShowAdd(false);
       fetchData();
+      toast('Monitor added successfully', 'success');
       return true;
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert('Unauthorized: Invalid or missing token');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
         setToken(null);
+      } else {
+        handleApiError(error);
       }
       return false;
     }
-  };
+  }, [token, fetchData, setShowAdd]);
 
-  const updateMonitor = async (id: number, name: string, url: string, interval: number) => {
+  const updateMonitor = useCallback(async (id: number, name: string, url: string, interval: number) => {
     try {
       await axios.put(`${API_BASE}/monitors`, { id, name, url, interval }, {
         headers: { Authorization: token }
       });
       fetchData();
+      toast('Monitor updated successfully', 'success');
       return true;
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert('Unauthorized: Invalid or missing token');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
         setToken(null);
+      } else {
+        handleApiError(error);
       }
       return false;
     }
-  };
+  }, [token, fetchData]);
 
-  const deleteMonitor = async (id: number) => {
-    if (!confirm('Delete this monitor?')) return;
+  const deleteMonitor = useCallback(async (id: number) => {
+    const confirmed = await confirmAction('Delete this monitor? This action cannot be undone.');
+    if (!confirmed) return;
     try {
       await axios.delete(`${API_BASE}/monitors/${id}`, {
         headers: { Authorization: token }
       });
       fetchData();
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert('Unauthorized: Invalid or missing token');
+      toast('Monitor deleted successfully', 'success');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
         setToken(null);
       } else {
-        alert('Delete failed');
+        handleApiError(error);
       }
     }
-  };
+  }, [token, fetchData]);
 
-  const addIncident = async (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => {
+  const addIncident = useCallback(async (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => {
     try {
       await axios.post(`${API_BASE}/incidents`, { title, description, status }, {
         headers: { Authorization: token }
       });
       fetchData();
+      toast('Incident posted successfully', 'success');
       return true;
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert('Unauthorized');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
         setToken(null);
+      } else {
+        handleApiError(error);
       }
       return false;
     }
-  };
+  }, [token, fetchData]);
 
-  const deleteIncident = async (id: number) => {
-    if (!confirm('Delete this incident?')) return;
+  const deleteIncident = useCallback(async (id: number) => {
+    const confirmed = await confirmAction('Delete this incident?');
+    if (!confirmed) return;
     try {
       await axios.delete(`${API_BASE}/incidents/${id}`, {
         headers: { Authorization: token }
       });
       fetchData();
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        alert('Unauthorized');
+      toast('Incident deleted successfully', 'success');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
         setToken(null);
+      } else {
+        handleApiError(error);
       }
     }
-  };
+  }, [token, fetchData]);
 
-  const getMonitorHistory = async (id: number) => {
+  const getMonitorHistory = useCallback(async (id: number): Promise<DailyStats[]> => {
     try {
-      const res = await axios.get(`${API_BASE}/history/${id}`);
+      const res = await axios.get<DailyStats[]>(`${API_BASE}/history/${id}`);
       return res.data;
     } catch (err) {
-      console.error(err);
+      console.error('Failed to fetch monitor history:', err);
+      toast('Failed to load history data', 'error');
       return [];
     }
-  };
+  }, []);
 
-  const verifyToken = async (testToken: string) => {
+  const verifyToken = useCallback(async (testToken: string) => {
     try {
       await axios.post(`${API_BASE}/verify-token`, {}, {
         headers: { Authorization: testToken }
@@ -170,7 +204,7 @@ export function useMonitors(): UseMonitorsReturn {
     } catch (err) {
       return false;
     }
-  };
+  }, []);
 
   const monitorHistory = useMemo(() => {
     const history: GroupedChecks = {};

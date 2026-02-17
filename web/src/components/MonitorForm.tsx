@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import type { Monitor } from '../types';
+import type { Monitor } from '@/types';
 
 interface MonitorFormProps {
   onAdd: (name: string, url: string, interval: number) => Promise<boolean>;
@@ -36,41 +36,61 @@ export function MonitorForm({ onAdd, onUpdate, monitor, onCancel }: MonitorFormP
         setNewName('');
         setNewUrl('');
         setNewInterval(60);
-      } else {
-        alert('Failed to add monitor');
       }
     }
   };
 
   return (
-    <div className="bg-[#111111] border border-[#262626] p-4 rounded mb-6 animate-in slide-in-from-top-2 fade-in duration-200">
+    <div className="bg-card p-4 rounded-lg mb-6 border border-border animate-fadeIn">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+        <h3 className="text-sm font-bold uppercase tracking-wider text-foreground">
           {monitor ? 'Edit Monitor' : 'Add New Monitor'}
         </h3>
         {onCancel && (
-          <button onClick={onCancel} className="text-xs text-[#666] hover:text-white">Cancel</button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors px-3 py-1"
+          >
+            Cancel
+          </button>
         )}
       </div>
-      <form onSubmit={handleSubmit} className="flex gap-3">
-        <input 
-          type="text" placeholder="Name (e.g. My API)"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] flex-1 text-white placeholder-[#444]"
-          value={newName} onChange={e => setNewName(e.target.value)} required
-        />
-        <input 
-          type="url" placeholder="https://example.com"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] flex-[2] text-white placeholder-[#444]"
-          value={newUrl} onChange={e => setNewUrl(e.target.value)} required={!monitor}
-        />
-        <input 
-          type="number" placeholder="60s"
-          className="bg-[#050505] border border-[#262626] px-3 py-2 rounded text-sm focus:outline-none focus:border-[#2f855a] w-24 text-white placeholder-[#444]"
-          value={newInterval} onChange={e => setNewInterval(Number(e.target.value))} required
-        />
-        <button type="submit" className="bg-[#333] hover:bg-[#444] text-white px-6 py-2 rounded text-sm font-bold border border-[#444]">
-          {monitor ? 'Update' : 'Add'}
-        </button>
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          <input
+            type="text"
+            placeholder="Name"
+            className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            value={newName}
+            onChange={e => setNewName(e.target.value)}
+            required
+          />
+          <input
+            type="url"
+            placeholder="https://example.com"
+            className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent md:col-span-2"
+            value={newUrl}
+            onChange={e => setNewUrl(e.target.value)}
+            required={!monitor}
+          />
+          <input
+            type="number"
+            placeholder="Interval (s)"
+            className="bg-background border border-border px-3 py-2 rounded text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+            value={newInterval}
+            onChange={e => setNewInterval(Number(e.target.value))}
+            required
+          />
+        </div>
+        <div className="flex justify-end mt-4">
+          <button
+            type="submit"
+            className="bg-primary hover:opacity-90 text-primary-foreground px-4 py-2 rounded text-sm font-bold transition-opacity"
+          >
+            {monitor ? 'Update Monitor' : 'Add Monitor'}
+          </button>
+        </div>
       </form>
     </div>
   );

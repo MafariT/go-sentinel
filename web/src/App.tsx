@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMonitors } from './hooks/useMonitors';
+import { setupAxiosInterceptors } from './utils/axios-interceptors';
 import { Navbar } from './components/Navbar';
 import { DashboardStats } from './components/DashboardStats';
 import { IncidentList } from './components/IncidentList';
@@ -35,6 +36,13 @@ function App() {
   const [editingMonitor, setEditingMonitor] = useState<Monitor | null>(null);
 
   useEffect(() => {
+    setupAxiosInterceptors(() => {
+      setToken(null);
+      setView('login');
+    });
+  }, [setToken]);
+
+  useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('login') === 'true') {
       setView('login');
@@ -61,7 +69,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-[#d1d1d1] font-sans flex flex-col">
+    <div className="min-h-screen bg-background text-foreground font-sans flex flex-col">
       <Navbar 
         showAdd={showAdd} 
         setShowAdd={(show) => { setShowAdd(show); setEditingMonitor(null); }}
@@ -96,8 +104,8 @@ function App() {
           />
         )}
 
-        <div className="border border-[#262626] rounded-md overflow-hidden bg-[#111111]">
-          <div className={`hidden md:grid ${isAdmin ? 'grid-cols-[2fr_3fr_100px_80px_80px]' : 'grid-cols-[2fr_3fr_100px_80px]'} border-b border-[#262626] bg-[#161616] px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-[#666]`}>
+        <div className="border border-border rounded-md overflow-hidden bg-card">
+          <div className={`hidden md:grid ${isAdmin ? 'grid-cols-[2fr_3fr_100px_80px_80px]' : 'grid-cols-[2fr_3fr_100px_80px]'} border-b border-border bg-muted/50 px-5 py-3 text-[11px] font-bold uppercase tracking-widest text-muted-foreground`}>
             <div>Monitor Details</div>
             <div>Latency Trend (Last 50)</div>
             <div className="text-right">Latency</div>

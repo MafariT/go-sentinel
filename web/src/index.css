@@ -1,22 +1,151 @@
 @import "tailwindcss";
 
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-status-up: #2f855a;
+  --color-status-up-dark: #276749;
+  --color-status-down: #c53030;
+  --color-status-down-light: #fc8181;
+  --color-status-unknown: #4a5568;
+}
+
+/* Global styles */
 html, body {
   margin: 0;
   padding: 0;
   background-color: #0a0a0a;
 }
 
+/* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
+
 ::-webkit-scrollbar-track {
   background: #0a0a0a;
 }
+
 ::-webkit-scrollbar-thumb {
   background: #262626;
   border-radius: 10px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: #333;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: #0a0a0a;
+  --foreground: #d1d1d1;
+  --card: #111111;
+  --card-foreground: #d1d1d1;
+  --popover: #111111;
+  --popover-foreground: #d1d1d1;
+  --primary: #2f855a;
+  --primary-foreground: #ffffff;
+  --secondary: #161616;
+  --secondary-foreground: #d1d1d1;
+  --muted: #262626;
+  --muted-foreground: #888;
+  --accent: #1a1a1a;
+  --accent-foreground: #d1d1d1;
+  --destructive: #c53030;
+  --destructive-foreground: #ffffff;
+  --border: #262626;
+  --input: #050505;
+  --ring: #2f855a;
+  --chart-1: #2f855a;
+  --chart-2: #4299e1;
+  --chart-3: #ed8936;
+  --chart-4: #9f7aea;
+  --chart-5: #f56565;
+  --sidebar: #111111;
+  --sidebar-foreground: #d1d1d1;
+  --sidebar-primary: #2f855a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #d1d1d1;
+  --sidebar-border: #262626;
+  --sidebar-ring: #2f855a;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #d1d1d1;
+  --card: #111111;
+  --card-foreground: #d1d1d1;
+  --popover: #111111;
+  --popover-foreground: #d1d1d1;
+  --primary: #2f855a;
+  --primary-foreground: #ffffff;
+  --secondary: #161616;
+  --secondary-foreground: #d1d1d1;
+  --muted: #262626;
+  --muted-foreground: #888;
+  --accent: #1a1a1a;
+  --accent-foreground: #d1d1d1;
+  --destructive: #c53030;
+  --destructive-foreground: #ffffff;
+  --border: #262626;
+  --input: #050505;
+  --ring: #2f855a;
+  --chart-1: #2f855a;
+  --chart-2: #4299e1;
+  --chart-3: #ed8936;
+  --chart-4: #9f7aea;
+  --chart-5: #f56565;
+  --sidebar: #111111;
+  --sidebar-foreground: #d1d1d1;
+  --sidebar-primary: #2f855a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #1a1a1a;
+  --sidebar-accent-foreground: #d1d1d1;
+  --sidebar-border: #262626;
+  --sidebar-ring: #2f855a;
 }

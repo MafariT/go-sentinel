@@ -1,6 +1,7 @@
 package monitor
 
 import (
+	"context"
 	"database/sql"
 	"go-sentinel/internal/db"
 	"go-sentinel/internal/models"
@@ -9,15 +10,22 @@ import (
 	"time"
 )
 
-func StartWorker(database *sql.DB) {
+func StartWorker(ctx context.Context, database *sql.DB) {
 	ticker := time.NewTicker(1 * time.Second)
 	cleanupTicker := time.NewTicker(1 * time.Hour)
 
 	go func() {
+		defer ticker.Stop()
+		defer cleanupTicker.Stop()
+
 		for {
 			select {
+			case <-ctx.Done():
+				log.Println("Worker shutdown complete")
+				return
+
 			case <-ticker.C:
-				targets, err := db.GetMonitors(database)
+				targets, err := db.GetMonitors(ctx, database)
 				if err != nil {
 					log.Printf("Worker error: failed to fetch monitors: %v", err)
 					continue
@@ -25,15 +33,15 @@ func StartWorker(database *sql.DB) {
 
 				for _, target := range targets {
 					if isDue(target) {
-						if err := db.UpdateLastChecked(database, target.ID); err != nil {
+						if err := db.UpdateLastChecked(ctx, database, target.ID); err != nil {
 							log.Printf("Worker error: failed to update timestamp: %v", err)
 							continue
 						}
 
 						go func(t models.Monitor) {
-							result := checker.PerformHTTPCheck(t.URL)
+							result := checker.PerformHTTPCheck(ctx, t.URL)
 
-							err := db.SaveCheck(database, models.Check{
+							err := db.SaveCheck(ctx, database, models.Check{
 								MonitorID:  t.ID,
 								StatusCode: result.StatusCode,
 								Latency:    result.Latency,
@@ -42,7 +50,7 @@ func StartWorker(database *sql.DB) {
 							if err != nil {
 								log.Printf("Worker error: failed to save check for %s: %v", t.Name, err)
 							} else {
-								if err := db.UpdateDailyStats(database, t.ID, result.IsUp, result.Latency); err != nil {
+								if err := db.UpdateDailyStats(ctx, database, t.ID, result.IsUp, result.Latency); err != nil {
 									log.Printf("Worker error: failed to update stats for %s: %v", t.Name, err)
 								}
 							}
@@ -50,7 +58,7 @@ func StartWorker(database *sql.DB) {
 					}
 				}
 			case <-cleanupTicker.C:
-				rows, err := db.CleanupOldChecks(database, 7)
+				rows, err := db.CleanupOldChecks(ctx, database, 7)
 				if err != nil {
 					log.Printf("Cleanup error: %v", err)
 				} else if rows > 0 {
@@ -65,7 +73,7 @@ func isDue(m models.Monitor) bool {
 	if m.LastCheckedAt == nil {
 		return true
 	}
-	
+
 	nextCheck := m.LastCheckedAt.Add(time.Duration(m.Interval) * time.Second)
 	return time.Now().After(nextCheck)
 }

@@ -1,6 +1,7 @@
 package checker
 
 import (
+	"context"
 	"net"
 	"net/http"
 	"syscall"
@@ -39,10 +40,10 @@ var httpClient = &http.Client{
 	},
 }
 
-func PerformHTTPCheck(url string) CheckResult {
+func PerformHTTPCheck(ctx context.Context, url string) CheckResult {
 	start := time.Now()
 	
-	req, err := http.NewRequest("HEAD", url, nil)
+	req, err := http.NewRequestWithContext(ctx, "HEAD", url, nil)
 	if err != nil {
 		return CheckResult{IsUp: false}
 	}
@@ -52,7 +53,15 @@ func PerformHTTPCheck(url string) CheckResult {
 
 	if err != nil {
 		start = time.Now()
-		resp, err = httpClient.Get(url)
+		getReq, getErr := http.NewRequestWithContext(ctx, "GET", url, nil)
+		if getErr != nil {
+			return CheckResult{
+				StatusCode: 0,
+				Latency:    latency,
+				IsUp:       false,
+			}
+		}
+		resp, err = httpClient.Do(getReq)
 		latency = time.Since(start).Milliseconds()
 		
 		if err != nil {

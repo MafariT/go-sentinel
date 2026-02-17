@@ -9,6 +9,7 @@ import (
 )
 
 func (s *Server) handleChecks(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	limitStr := r.URL.Query().Get("limit")
 	limit := 50
 	if limitStr != "" {
@@ -24,7 +25,7 @@ func (s *Server) handleChecks(w http.ResponseWriter, r *http.Request) {
 		limit = 1
 	}
 
-	checksMap, err := db.GetChecks(s.DB, limit)
+	checksMap, err := db.GetChecks(ctx, s.DB, limit)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -46,4 +47,26 @@ func (s *Server) handleVerifyToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	response := map[string]interface{}{
+		"status": "ok",
+	}
+
+	if err := s.DB.PingContext(ctx); err != nil {
+		response["status"] = "error"
+		response["database"] = "unreachable"
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusServiceUnavailable)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response["database"] = "ok"
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }

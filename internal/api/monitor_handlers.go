@@ -9,29 +9,10 @@ import (
 	"go-sentinel/internal/models"
 )
 
-func (s *Server) handleDeleteMonitor(w http.ResponseWriter, r *http.Request) {
-	idStr := r.PathValue("id")
-	if idStr == "" {
-		http.Error(w, "Missing id parameter", http.StatusBadRequest)
-		return
-	}
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		http.Error(w, "Invalid id parameter", http.StatusBadRequest)
-		return
-	}
-
-	if err := db.DeleteMonitor(s.DB, id); err != nil {
-		http.Error(w, "Failed to delete monitor", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-}
 
 func (s *Server) handleGetMonitors(w http.ResponseWriter, r *http.Request) {
-	monitors, err := db.GetMonitors(s.DB)
+	ctx := r.Context()
+	monitors, err := db.GetMonitors(ctx, s.DB)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -48,13 +29,19 @@ func (s *Server) handleGetMonitors(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePostMonitor(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var m models.Monitor
 	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
 		return
 	}
+	
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
 
-	id, err := db.CreateMonitor(s.DB, m)
+	id, err := db.CreateMonitor(ctx, s.DB, m)
 	if err != nil {
 		http.Error(w, "Failed to create monitor", http.StatusInternalServerError)
 		return
@@ -67,6 +54,7 @@ func (s *Server) handlePostMonitor(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handlePutMonitor(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	var m models.Monitor
 	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -76,16 +64,45 @@ func (s *Server) handlePutMonitor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Monitor ID required", http.StatusBadRequest)
 		return
 	}
-	if err := db.UpdateMonitor(s.DB, m); err != nil {
+	
+	if err := m.Validate(); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+	
+	if err := db.UpdateMonitor(ctx, s.DB, m); err != nil {
 		http.Error(w, "Failed to update monitor", http.StatusInternalServerError)
 		return
 	}
-
+	
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(m)
 }
 
+func (s *Server) handleDeleteMonitor(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+	idStr := r.PathValue("id")
+	if idStr == "" {
+		http.Error(w, "Missing id parameter", http.StatusBadRequest)
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "Invalid id parameter", http.StatusBadRequest)
+		return
+	}
+
+	if err := db.DeleteMonitor(ctx, s.DB, id); err != nil {
+		http.Error(w, "Failed to delete monitor", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	idStr := r.PathValue("id")
 	if idStr == "" {
 		http.Error(w, "Missing monitor_id", http.StatusBadRequest)
@@ -98,7 +115,7 @@ func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	stats, err := db.GetMonitorHistory(s.DB, id)
+	stats, err := db.GetMonitorHistory(ctx, s.DB, id)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return
@@ -109,7 +126,8 @@ func (s *Server) handleHistory(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) handleAllHistory(w http.ResponseWriter, r *http.Request) {
-	stats, err := db.GetAllMonitorHistory(s.DB)
+	ctx := r.Context()
+	stats, err := db.GetAllMonitorHistory(ctx, s.DB)
 	if err != nil {
 		http.Error(w, "Database error", http.StatusInternalServerError)
 		return

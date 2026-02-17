@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	"embed"
 	"io/fs"
 	"log"
 	"os"
+	"os/signal"
+	"syscall"
+	"time"
 
 	"go-sentinel/internal/api"
 	"go-sentinel/internal/db"
@@ -38,14 +42,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
-	defer database.Close()
-
+	
+	database.SetMaxOpenConns(25)
+	database.SetMaxIdleConns(5)
+	database.SetConnMaxLifetime(5 * time.Minute)
+	
 	if err := db.Initialize(database); err != nil {
+		database.Close()
 		log.Fatalf("Failed to initialize database schema: %v", err)
 	}
-
+	
 	// Services & Server Initialization
-	monitor.StartWorker(database)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	monitor.StartWorker(ctx, database)
 
 	server := api.NewServer(database, Version)
 	server.AdminToken = adminToken
@@ -63,7 +77,16 @@ func main() {
 		log.Printf("Warning: Failed to locate embedded frontend: %v", err)
 	}
 
-	server.Start(port)
+	go server.Start(ctx, port)
+	
+	<-signalChan
+	log.Println("Received interrupt signal, shutting down...")
+	cancel()
+	
+	time.Sleep(3 * time.Second)
+	
+	database.Close()
+	log.Println("Shutdown complete")
 }
 
 func getEnv(key, fallback string) string {

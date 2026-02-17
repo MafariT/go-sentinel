@@ -10,8 +10,12 @@ import (
 	"time"
 )
 
+const (
+	workerTickInterval = 30 * time.Second
+)
+
 func StartWorker(ctx context.Context, database *sql.DB) {
-	ticker := time.NewTicker(1 * time.Second)
+	ticker := time.NewTicker(workerTickInterval)
 	cleanupTicker := time.NewTicker(1 * time.Hour)
 
 	go func() {
@@ -31,8 +35,10 @@ func StartWorker(ctx context.Context, database *sql.DB) {
 					continue
 				}
 
+				dueCount := 0
 				for _, target := range targets {
 					if isDue(target) {
+						dueCount++
 						if err := db.UpdateLastChecked(ctx, database, target.ID); err != nil {
 							log.Printf("Worker error: failed to update timestamp: %v", err)
 							continue
@@ -57,6 +63,11 @@ func StartWorker(ctx context.Context, database *sql.DB) {
 						}(target)
 					}
 				}
+
+				if dueCount > 0 {
+					log.Printf("Worker: processed %d due monitors", dueCount)
+				}
+
 			case <-cleanupTicker.C:
 				rows, err := db.CleanupOldChecks(ctx, database, 7)
 				if err != nil {

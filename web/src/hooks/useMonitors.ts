@@ -4,7 +4,7 @@ import type { Monitor, Check, MonitorStats, Incident, DailyStats, ApiError } fro
 import { toast, confirmAction, handleApiError } from '@/utils/notifications';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
-const POLLING_INTERVAL = 3000;
+const POLLING_INTERVAL = 10000;
 
 type GroupedChecks = Record<number, Check[]>;
 

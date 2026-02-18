@@ -42,16 +42,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to open database: %v", err)
 	}
-	
-	database.SetMaxOpenConns(25)
-	database.SetMaxIdleConns(5)
-	database.SetConnMaxLifetime(5 * time.Minute)
-	
+
+	database.SetMaxOpenConns(1)
+	database.SetMaxIdleConns(1)
+	database.SetConnMaxLifetime(0)
+
 	if err := db.Initialize(database); err != nil {
 		database.Close()
 		log.Fatalf("Failed to initialize database schema: %v", err)
 	}
-	
+
 	// Services & Server Initialization
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -78,13 +78,13 @@ func main() {
 	}
 
 	go server.Start(ctx, port)
-	
+
 	<-signalChan
 	log.Println("Received interrupt signal, shutting down...")
 	cancel()
-	
+
 	time.Sleep(3 * time.Second)
-	
+
 	database.Close()
 	log.Println("Shutdown complete")
 }

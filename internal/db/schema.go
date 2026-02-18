@@ -1,6 +1,17 @@
 package db
 
-import "database/sql"
+import (
+	"database/sql"
+	"fmt"
+)
+
+var pragmas = []string{
+	"PRAGMA journal_mode=WAL",
+	"PRAGMA synchronous=NORMAL",
+	"PRAGMA cache_size=-64000",
+	"PRAGMA temp_store=memory",
+	"PRAGMA foreign_keys=ON",
+}
 
 const schema = `
 CREATE TABLE IF NOT EXISTS monitors (
@@ -24,6 +35,7 @@ CREATE TABLE IF NOT EXISTS checks (
 
 CREATE INDEX IF NOT EXISTS idx_checks_monitor_id ON checks(monitor_id);
 CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks(checked_at);
+CREATE INDEX IF NOT EXISTS idx_checks_monitor_checked ON checks(monitor_id, checked_at DESC);
 
 CREATE TABLE IF NOT EXISTS daily_stats (
     monitor_id INTEGER,
@@ -46,6 +58,11 @@ CREATE TABLE IF NOT EXISTS incidents (
 `
 
 func Initialize(db *sql.DB) error {
+	for _, p := range pragmas {
+		if _, err := db.Exec(p); err != nil {
+			return fmt.Errorf("failed to set %s: %w", p, err)
+		}
+	}
 	_, err := db.Exec(schema)
 	return err
 }

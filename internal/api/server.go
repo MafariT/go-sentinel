@@ -1,13 +1,16 @@
 package api
 
 import (
+	"compress/gzip"
 	"context"
 	"crypto/sha256"
 	"crypto/subtle"
 	"database/sql"
+	"io"
 	"io/fs"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -89,7 +92,29 @@ func (s *Server) securityHeaders(next http.Handler) http.Handler {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	s.securityHeaders(s.mux).ServeHTTP(w, r)
+	s.securityHeaders(s.gzipMiddleware(s.mux)).ServeHTTP(w, r)
+}
+
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (g gzipResponseWriter) Write(b []byte) (int, error) {
+	return g.Writer.Write(b)
+}
+
+func (s *Server) gzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		next.ServeHTTP(gzipResponseWriter{Writer: gz, ResponseWriter: w}, r)
+	})
 }
 
 func (s *Server) Start(ctx context.Context, port string) {

@@ -47,18 +47,13 @@ func StartWorker(ctx context.Context, database *sql.DB) {
 						go func(t models.Monitor) {
 							result := checker.PerformHTTPCheck(ctx, t.URL)
 
-							err := db.SaveCheck(ctx, database, models.Check{
+							if err := db.SaveCheckAndUpdateStats(ctx, database, models.Check{
 								MonitorID:  t.ID,
 								StatusCode: result.StatusCode,
 								Latency:    result.Latency,
 								IsUp:       result.IsUp,
-							})
-							if err != nil {
+							}); err != nil {
 								log.Printf("Worker error: failed to save check for %s: %v", t.Name, err)
-							} else {
-								if err := db.UpdateDailyStats(ctx, database, t.ID, result.IsUp, result.Latency); err != nil {
-									log.Printf("Worker error: failed to update stats for %s: %v", t.Name, err)
-								}
 							}
 						}(target)
 					}

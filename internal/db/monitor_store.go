@@ -59,10 +59,17 @@ func UpdateLastChecked(ctx context.Context, db *sql.DB, monitorID int64) error {
 }
 
 func DeleteMonitor(ctx context.Context, db *sql.DB, id int) error {
-	_, err := db.ExecContext(ctx, "DELETE FROM checks WHERE monitor_id = ?", id)
+	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
 	}
-	_, err = db.ExecContext(ctx, "DELETE FROM monitors WHERE id = ?", id)
-	return err
+	defer tx.Rollback()
+
+	if _, err := tx.ExecContext(ctx, "DELETE FROM checks WHERE monitor_id = ?", id); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, "DELETE FROM monitors WHERE id = ?", id); err != nil {
+		return err
+	}
+	return tx.Commit()
 }

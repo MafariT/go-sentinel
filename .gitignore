@@ -11,6 +11,8 @@
 
 monitor.db
 monitor.db-journal
+monitor.db-wal
+monitor.db-shm
 
 .idea/
 .vscode/

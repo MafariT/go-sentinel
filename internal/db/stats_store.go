@@ -4,28 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"go-sentinel/internal/models"
-	"time"
-)
-
-func UpdateDailyStats(ctx context.Context, db *sql.DB, monitorID int64, isUp bool, latency int64) error {
-	date := time.Now().Format("2006-01-02")
-	
-	upIncrement := 0
-	if isUp {
-		upIncrement = 1
-	}
-
-	query := `
-		INSERT INTO daily_stats (monitor_id, date, up_count, total_count, total_latency)
-		VALUES (?, ?, ?, 1, ?)
-		ON CONFLICT(monitor_id, date) DO UPDATE SET
-			up_count = up_count + ?,
-			total_count = total_count + 1,
-			total_latency = total_latency + ?
-	`
-	_, err := db.ExecContext(ctx, query, monitorID, date, upIncrement, latency, upIncrement, latency)
-	return err
-}
+);
 
 func GetMonitorHistory(ctx context.Context, db *sql.DB, monitorID int64) ([]models.DailyStat, error) {
 	query := `

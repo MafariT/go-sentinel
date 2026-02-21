@@ -84,30 +84,48 @@ func NotifyStateChange(ctx context.Context, database *sql.DB, monitor models.Mon
 }
 
 func buildEmbed(monitor models.Monitor, result models.Check) discordEmbed {
-	var title string
+	var title, description string
 	var color int
 
 	if result.IsUp {
 		title = fmt.Sprintf("✅ Monitor Recovered: %s", monitor.Name)
+		description = fmt.Sprintf("**%s** is back online and responding normally.", monitor.Name)
 		color = colorGreen
 	} else {
 		title = fmt.Sprintf("🔴 Monitor Down: %s", monitor.Name)
+		description = fmt.Sprintf("**%s** is not responding. Immediate attention may be required.", monitor.Name)
 		color = colorRed
 	}
 
-	statusValue := "N/A"
-	if result.StatusCode > 0 {
-		statusValue = fmt.Sprintf("%d", result.StatusCode)
+	statusValue := httpStatusText(result.StatusCode)
+
+	intervalText := fmt.Sprintf("Every %ds", monitor.Interval)
+	if monitor.Interval%60 == 0 {
+		intervalText = fmt.Sprintf("Every %dm", monitor.Interval/60)
 	}
 
 	return discordEmbed{
-		Title: title,
-		Color: color,
+		Title:       title,
+		Description: description,
+		Color:       color,
 		Fields: []embedField{
+			{Name: "URL", Value: monitor.URL, Inline: false},
 			{Name: "Status Code", Value: statusValue, Inline: true},
 			{Name: "Latency", Value: fmt.Sprintf("%dms", result.Latency), Inline: true},
+			{Name: "Interval", Value: intervalText, Inline: true},
 		},
 		Footer:    &embedFooter{Text: "go-sentinel"},
 		Timestamp: time.Now().UTC().Format(time.RFC3339),
 	}
+}
+
+func httpStatusText(code int) string {
+	if code <= 0 {
+		return "N/A — Connection failed"
+	}
+	text := http.StatusText(code)
+	if text == "" {
+		return fmt.Sprintf("%d", code)
+	}
+	return fmt.Sprintf("%d %s", code, text)
 }

@@ -8,12 +8,6 @@ import (
 	"time"
 )
 
-func SaveCheck(ctx context.Context, db *sql.DB, check models.Check) error {
-	query := "INSERT INTO checks (monitor_id, status_code, latency, is_up) VALUES (?, ?, ?, ?)"
-	_, err := db.ExecContext(ctx, query, check.MonitorID, check.StatusCode, check.Latency, check.IsUp)
-	return err
-}
-
 func SaveCheckAndUpdateStats(ctx context.Context, db *sql.DB, check models.Check) error {
 	tx, err := db.BeginTx(ctx, nil)
 	if err != nil {

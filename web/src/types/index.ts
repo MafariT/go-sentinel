@@ -34,6 +34,13 @@ export interface DailyStats {
   avg_latency: number;
 }
 
+export interface Webhook {
+  id: number;
+  name: string;
+  url: string;
+  enabled: boolean;
+}
+
 export interface ApiError {
   response?: {
     status: number;

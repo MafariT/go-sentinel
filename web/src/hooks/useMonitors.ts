@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import axios from 'axios';
-import type { Monitor, Check, MonitorStats, Incident, DailyStats, ApiError } from '@/types';
+import type { Monitor, Check, MonitorStats, Incident, DailyStats, Webhook, ApiError } from '@/types';
 import { toast, confirmAction, handleApiError } from '@/utils/notifications';
 
 const API_BASE = import.meta.env.VITE_API_BASE || '';
@@ -12,14 +12,16 @@ interface UseMonitorsReturn {
   monitors: Monitor[];
   checks: GroupedChecks;
   incidents: Incident[];
+  webhooks: Webhook[];
   loading: boolean;
-  showAdd: boolean;
-  setShowAdd: (show: boolean) => void;
   addMonitor: (name: string, url: string, interval: number) => Promise<boolean>;
   updateMonitor: (id: number, name: string, url: string, interval: number) => Promise<boolean>;
   deleteMonitor: (id: number) => Promise<void>;
   addIncident: (title: string, description: string, status: 'investigating' | 'monitoring' | 'resolved') => Promise<boolean>;
   deleteIncident: (id: number) => Promise<void>;
+  addWebhook: (name: string, url: string) => Promise<boolean>;
+  updateWebhook: (id: number, name: string, url: string, enabled: boolean) => Promise<boolean>;
+  deleteWebhook: (id: number) => Promise<void>;
   verifyToken: (token: string) => Promise<boolean>;
   getMonitorHistory: (id: number) => Promise<DailyStats[]>;
   monitorHistory: GroupedChecks;
@@ -34,8 +36,8 @@ export function useMonitors(): UseMonitorsReturn {
   const [checks, setChecks] = useState<GroupedChecks>({});
   const [dailyHistory, setDailyHistory] = useState<Record<number, DailyStats[]>>({});
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [webhooks, setWebhooks] = useState<Webhook[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showAdd, setShowAdd] = useState(false);
   const [token, setToken] = useState<string | null>(() => {
     try {
       return localStorage.getItem('admin_token');
@@ -60,16 +62,29 @@ export function useMonitors(): UseMonitorsReturn {
   const fetchData = useCallback(async () => {
     try {
       const config = token ? { headers: { Authorization: token } } : {};
-      const [monRes, checkRes, incRes, historyRes] = await Promise.all([
+      const baseRequests = [
         axios.get(`${API_BASE}/monitors`, config),
         axios.get(`${API_BASE}/checks?limit=50`, config),
         axios.get(`${API_BASE}/incidents`, config),
-        axios.get(`${API_BASE}/history`, config)
-      ]);
+        axios.get(`${API_BASE}/history`, config),
+      ] as const;
+
+      const [monRes, checkRes, incRes, historyRes] = await Promise.all(baseRequests);
       setMonitors(monRes.data || []);
       setChecks(checkRes.data || {});
       setIncidents(incRes.data || []);
       setDailyHistory(historyRes.data || {});
+
+      if (token) {
+        try {
+          const webhookRes = await axios.get(`${API_BASE}/webhooks`, config);
+          setWebhooks(Array.isArray(webhookRes.data) ? webhookRes.data : []);
+        } catch {
+          setWebhooks([]);
+        }
+      } else {
+        setWebhooks([]);
+      }
     } catch (err) {
       console.error('Data fetch failed', err);
     } finally {
@@ -88,7 +103,6 @@ export function useMonitors(): UseMonitorsReturn {
       await axios.post(`${API_BASE}/monitors`, { name, url, interval }, {
         headers: { Authorization: token }
       });
-      setShowAdd(false);
       fetchData();
       toast('Monitor added successfully', 'success');
       return true;
@@ -102,7 +116,7 @@ export function useMonitors(): UseMonitorsReturn {
       }
       return false;
     }
-  }, [token, fetchData, setShowAdd]);
+  }, [token, fetchData]);
 
   const updateMonitor = useCallback(async (id: number, name: string, url: string, interval: number) => {
     try {
@@ -184,6 +198,66 @@ export function useMonitors(): UseMonitorsReturn {
     }
   }, [token, fetchData]);
 
+  const addWebhook = useCallback(async (name: string, url: string) => {
+    try {
+      await axios.post(`${API_BASE}/webhooks`, { name, url }, {
+        headers: { Authorization: token }
+      });
+      fetchData();
+      toast('Webhook added successfully', 'success');
+      return true;
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
+        setToken(null);
+      } else {
+        handleApiError(error);
+      }
+      return false;
+    }
+  }, [token, fetchData]);
+
+  const updateWebhook = useCallback(async (id: number, name: string, url: string, enabled: boolean) => {
+    try {
+      await axios.put(`${API_BASE}/webhooks/${id}`, { name, url, enabled }, {
+        headers: { Authorization: token }
+      });
+      fetchData();
+      toast('Webhook updated successfully', 'success');
+      return true;
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
+        setToken(null);
+      } else {
+        handleApiError(error);
+      }
+      return false;
+    }
+  }, [token, fetchData]);
+
+  const deleteWebhook = useCallback(async (id: number) => {
+    const confirmed = await confirmAction('Delete this webhook? This action cannot be undone.');
+    if (!confirmed) return;
+    try {
+      await axios.delete(`${API_BASE}/webhooks/${id}`, {
+        headers: { Authorization: token }
+      });
+      fetchData();
+      toast('Webhook deleted successfully', 'success');
+    } catch (err) {
+      const error = err as ApiError;
+      if (error.response?.status === 401) {
+        toast('Unauthorized: Invalid token', 'error');
+        setToken(null);
+      } else {
+        handleApiError(error);
+      }
+    }
+  }, [token, fetchData]);
+
   const getMonitorHistory = useCallback(async (id: number): Promise<DailyStats[]> => {
     try {
       const res = await axios.get<DailyStats[]>(`${API_BASE}/history/${id}`);
@@ -201,7 +275,7 @@ export function useMonitors(): UseMonitorsReturn {
         headers: { Authorization: testToken }
       });
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   }, []);
@@ -237,14 +311,16 @@ export function useMonitors(): UseMonitorsReturn {
     monitors,
     checks,
     incidents,
+    webhooks,
     loading,
-    showAdd,
-    setShowAdd,
     addMonitor,
     updateMonitor,
     deleteMonitor,
     addIncident,
     deleteIncident,
+    addWebhook,
+    updateWebhook,
+    deleteWebhook,
     verifyToken,
     getMonitorHistory,
     monitorHistory,

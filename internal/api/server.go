@@ -76,6 +76,11 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("GET /incidents", s.handleGetIncidents)
 	s.mux.HandleFunc("POST /incidents", s.limitRequestSize(s.adminOnly(s.handlePostIncident)))
 	s.mux.HandleFunc("DELETE /incidents/{id}", s.adminOnly(s.handleDeleteIncident))
+
+	s.mux.HandleFunc("GET /webhooks", s.adminOnly(s.handleGetWebhooks))
+	s.mux.HandleFunc("POST /webhooks", s.limitRequestSize(s.adminOnly(s.handlePostWebhook)))
+	s.mux.HandleFunc("PUT /webhooks/{id}", s.limitRequestSize(s.adminOnly(s.handlePutWebhook)))
+	s.mux.HandleFunc("DELETE /webhooks/{id}", s.adminOnly(s.handleDeleteWebhook))
 }
 
 func (s *Server) RegisterFrontend(staticFS fs.FS) {

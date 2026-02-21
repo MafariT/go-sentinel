@@ -33,9 +33,6 @@ CREATE TABLE IF NOT EXISTS checks (
     FOREIGN KEY (monitor_id) REFERENCES monitors (id)
 );
 
-CREATE INDEX IF NOT EXISTS idx_checks_monitor_id ON checks(monitor_id);
-CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks(checked_at);
-CREATE INDEX IF NOT EXISTS idx_checks_monitor_checked ON checks(monitor_id, checked_at DESC);
 
 CREATE TABLE IF NOT EXISTS daily_stats (
     monitor_id INTEGER,
@@ -45,16 +42,31 @@ CREATE TABLE IF NOT EXISTS daily_stats (
     total_latency INTEGER DEFAULT 0,
     PRIMARY KEY (monitor_id, date),
     FOREIGN KEY (monitor_id) REFERENCES monitors (id) ON DELETE CASCADE
-);
-
-CREATE TABLE IF NOT EXISTS incidents (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT,
+    );
+    
+    CREATE TABLE IF NOT EXISTS incidents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT NOT NULL,
+        description TEXT,
     status TEXT NOT NULL, -- 'investigating', 'monitoring', 'resolved'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS webhooks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_checks_monitor_id ON checks(monitor_id);
+CREATE INDEX IF NOT EXISTS idx_checks_checked_at ON checks(checked_at);
+CREATE INDEX IF NOT EXISTS idx_checks_monitor_checked ON checks(monitor_id, checked_at DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_stats_date ON daily_stats(date);
+CREATE INDEX IF NOT EXISTS idx_incidents_created_at ON incidents(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_webhooks_enabled ON webhooks(enabled);
 `
 
 func Initialize(db *sql.DB) error {

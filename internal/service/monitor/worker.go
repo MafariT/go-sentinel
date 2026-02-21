@@ -6,7 +6,9 @@ import (
 	"go-sentinel/internal/db"
 	"go-sentinel/internal/models"
 	"go-sentinel/internal/service/checker"
+	"go-sentinel/internal/service/notifier"
 	"log"
+	"sync"
 	"time"
 )
 
@@ -17,6 +19,7 @@ const (
 func StartWorker(ctx context.Context, database *sql.DB) {
 	ticker := time.NewTicker(workerTickInterval)
 	cleanupTicker := time.NewTicker(1 * time.Hour)
+	var monitorState sync.Map
 
 	go func() {
 		defer ticker.Stop()
@@ -47,14 +50,21 @@ func StartWorker(ctx context.Context, database *sql.DB) {
 						go func(t models.Monitor) {
 							result := checker.PerformHTTPCheck(ctx, t.URL)
 
-							if err := db.SaveCheckAndUpdateStats(ctx, database, models.Check{
+							check := models.Check{
 								MonitorID:  t.ID,
 								StatusCode: result.StatusCode,
 								Latency:    result.Latency,
 								IsUp:       result.IsUp,
-							}); err != nil {
+							}
+
+							if err := db.SaveCheckAndUpdateStats(ctx, database, check); err != nil {
 								log.Printf("Worker error: failed to save check for %s: %v", t.Name, err)
 							}
+
+							if prev, known := monitorState.Load(t.ID); known && prev.(bool) != result.IsUp {
+								notifier.NotifyStateChange(ctx, database, t, check)
+							}
+							monitorState.Store(t.ID, result.IsUp)
 						}(target)
 					}
 				}

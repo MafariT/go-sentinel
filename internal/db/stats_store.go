@@ -4,7 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"go-sentinel/internal/models"
-);
+)
 
 func GetMonitorHistory(ctx context.Context, db *sql.DB, monitorID int64) ([]models.DailyStat, error) {
 	query := `
@@ -27,12 +27,12 @@ func GetMonitorHistory(ctx context.Context, db *sql.DB, monitorID int64) ([]mode
 		if err := rows.Scan(&date, &up, &total, &lat); err != nil {
 			return nil, err
 		}
-		
+
 		pct := 0.0
 		if total > 0 {
 			pct = (float64(up) / float64(total)) * 100
 		}
-		
+
 		avg := int64(0)
 		if total > 0 {
 			avg = lat / total
@@ -74,7 +74,7 @@ func GetAllMonitorHistory(ctx context.Context, db *sql.DB) (map[int64][]models.D
 		if total > 0 {
 			pct = (float64(up) / float64(total)) * 100
 		}
-		
+
 		avg := int64(0)
 		if total > 0 {
 			avg = lat / total
